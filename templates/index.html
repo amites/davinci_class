@@ -9,8 +9,6 @@
 {% endblock %}
 
 {% block main %}
-<h2>{% trans 'Programming with Python' %}</h2>
-
 
 {% blog_recent_posts 2 as recent_posts %}
 {% if recent_posts %}
@@ -23,10 +21,12 @@
                 <p class="content">
                     {{ recent_post.content|richtext_filters|safe }}
                 </p>
+                {% if not forloop.last %}<hr>{% endif %}
             </li>
         {% endfor %}
     </ul>
 {% else %}
+    <h2>{% trans 'Programming with Python' %}</h2>
     <p>{% trans 'Welcome to your class.' %}</p>
 {% endif %}
 {% endblock %}

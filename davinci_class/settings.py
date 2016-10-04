@@ -87,7 +87,7 @@ RICHTEXT_FILTER_LEVEL = 3
 PAGEDOWN_SERVER_SIDE_PREVIEW = True
 
 RICHTEXT_FILTERS = ['mezzanine_pagedown.filters.custom']
-PAGEDOWN_MARKDOWN_EXTENSIONS = ('extra','codehilite','toc')
+PAGEDOWN_MARKDOWN_EXTENSIONS = ('extra','codehilite','toc', 'tables', )
 
 ########################
 # MAIN DJANGO SETTINGS #
