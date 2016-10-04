@@ -94,7 +94,7 @@
 <div class="col-md-2 left">
     {% block left_panel %}
 {#        <div class="panel panel-default tree">{% page_menu "pages/menus/tree.html" %}</div>#}
-        {% blog_recent_posts 5 as recent_posts %}
+        {% blog_recent_posts 20 as recent_posts %}
         {% if recent_posts %}
             <h3>{% trans "Recent Posts" %}</h3>
             <ul class="unstyled recent-posts">
@@ -107,6 +107,16 @@
         {% else %}
             <p>{% trans 'Welcome to your class.' %}</p>
         {% endif %}
+
+        <div class="panel panel-default">
+            <a href="https://github.com/amites/davinci_class_2016/">
+                {% trans 'Class Github Repository' %}
+            </a>
+            <br>
+            <a href="https://github.com/amites/davinci_class_2016/tree/pets/hello_world">
+                <i>{% trans 'Additional Model & Form References' %}</i>
+            </a>
+        </div>
     {% endblock %}
 </div>
 
@@ -115,6 +125,7 @@
 </div>
 
 <div class="col-md-3 right">
+
 {% comment %}
     {% nevercache %}
 {#    {% include "includes/user_panel.html" %}#}
