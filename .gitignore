@@ -6,4 +6,5 @@
 local_settings.py
 /static
 *.conf
-
+rtmbot.json
+snippets
