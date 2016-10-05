@@ -2,14 +2,13 @@
 {% load i18n %}
 
 {% block meta_title %}{% trans "Home" %}{% endblock %}
-{% block title %}{% trans "Home" %}{% endblock %}
+{% block title %}{% trans "Class Recordings" %}{% endblock %}
 
 {% block breadcrumb_menu %}
     <li class="active">{% trans "Recordings" %}</li>
 {% endblock %}
 
 {% block main %}
-    <h1>{% trans 'Class Recordings' %}</h1>
     <ul>
         {% for recording in recordings %}
             <li><a href="{{ recording.url }}">
