@@ -6,4 +6,8 @@
 local_settings.py
 /static
 *.conf
+rtmbot.json
+snippets
+*.swp
+*.sock
 

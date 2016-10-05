@@ -77,6 +77,7 @@ from os import path
 # Setting to turn on featured images for blog posts. Defaults to False.
 #
 # BLOG_USE_FEATURED_IMAGE = True
+BLOG_SLUG = 'blog'
 
 # If True, the django-modeltranslation will be added to the
 # INSTALLED_APPS setting.
@@ -86,8 +87,8 @@ RICHTEXT_WIDGET_CLASS = 'mezzanine_pagedown.widgets.PageDownWidget'
 RICHTEXT_FILTER_LEVEL = 3
 PAGEDOWN_SERVER_SIDE_PREVIEW = True
 
-# RICHTEXT_FILTERS = ['mezzanine_pagedown.filters.custom']
-# PAGEDOWN_MARKDOWN_EXTENSIONS = ('extra','codehilite','toc')
+RICHTEXT_FILTERS = ['mezzanine_pagedown.filters.custom']
+PAGEDOWN_MARKDOWN_EXTENSIONS = ('extra','codehilite','toc', 'tables', )
 
 ########################
 # MAIN DJANGO SETTINGS #
@@ -247,10 +248,9 @@ INSTALLED_APPS = (
     "mezzanine.pages",
     "mezzanine.blog",
     "mezzanine.forms",
-    "mezzanine.galleries",
-    "mezzanine.twitter",
-    # "mezzanine.accounts",
-    # "mezzanine.mobile",
+    # "mezzanine.galleries",
+
+    'recordings',
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
@@ -283,6 +283,14 @@ MIDDLEWARE_CLASSES = (
 # at the moment we are using custom forks of them.
 PACKAGE_NAME_FILEBROWSER = "filebrowser_safe"
 PACKAGE_NAME_GRAPPELLI = "grappelli_safe"
+
+########
+# BOTO #
+########
+# These should be overridden in local_settings
+AWS_ACCESS_KEY = None
+AWS_SECRET_KEY = None
+
 
 #########################
 # OPTIONAL APPLICATIONS #

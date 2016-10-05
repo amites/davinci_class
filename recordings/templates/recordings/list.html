@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block meta_title %}{% trans "Home" %}{% endblock %}
+{% block title %}{% trans "Home" %}{% endblock %}
+
+{% block breadcrumb_menu %}
+    <li class="active">{% trans "Recordings" %}</li>
+{% endblock %}
+
+{% block main %}
+    <h1>{% trans 'Class Recordings' %}</h1>
+    <ul>
+        {% for recording in recordings %}
+            <li><a href="{{ recording.url }}">
+                {% trans 'Class' %} {{ recording.session }}
+                - {{ recording.class_date }}
+                {% if recording.name %}- {{ recording.name }}{% endif %}
+                - {% trans 'Part' %} {{ recording.class_part }}
+            </a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
