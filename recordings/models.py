@@ -1,5 +1,9 @@
 from __future__ import unicode_literals
 
+import re
+from datetime import datetime
+
+from django.conf import settings
 from django.db import models
 
 
@@ -17,3 +21,28 @@ class ClassRecording(models.Model):
     def __unicode__(self):
         return '{} - {} - {} - {}'.format(self.name, self.session,
                                           self.class_date, self.class_part)
+
+    def save(self, *args, **kwargs):
+        if not self.course:
+            self.course = settings.COURSE
+        if self.url:
+            if not self.class_part:
+                result_part = re.search(r'pt(\d+)', self.url)
+                self.class_part = \
+                    int(result_part.group(1)) if result_part else 1
+
+            result = re.search(r'class-(\d+)--([\d-]+)(.*)',
+                               self.url.strip('.m4a'))
+            if result:
+                if not self.class_date:
+                    date_str = '%Y-%m-%d' \
+                        if result.group(2).strip('-').count('-') \
+                        else '%Y%m%d'
+                    self.class_date = \
+                        datetime.strptime(result.group(2), date_str)
+                if not self.name:
+                    self.name = result.group(3) if result.group(3) else ''
+                if not self.session:
+                    self.session = int(result.group(1))
+
+        super(ClassRecording, self).save(*args, **kwargs)

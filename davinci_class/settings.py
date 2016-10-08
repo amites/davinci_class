@@ -2,6 +2,12 @@
 from __future__ import absolute_import, unicode_literals
 from os import path
 
+####################
+# DAVINCI SETTINGS #
+####################
+
+COURSE = 1
+
 
 ######################
 # MEZZANINE SETTINGS #
@@ -185,6 +191,10 @@ STATIC_URL = "/static/"
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = path.join(PROJECT_ROOT, STATIC_URL.strip("/"))
+
+STATICFILES_DIRS = [
+    path.join(BASE_DIR, 'recordings', 'static'),
+]
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.

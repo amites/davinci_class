@@ -1,14 +1,17 @@
 .idea
+*.swp
+*.sock
 *.pyc
 *.pyo
 *.db
 .DS_Store
+
 .coverage
 local_settings.py
 /static
+
 *.conf
 rtmbot.json
 snippets
-*.swp
-*.sock
+src
 
