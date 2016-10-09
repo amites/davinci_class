@@ -301,6 +301,10 @@ PACKAGE_NAME_GRAPPELLI = "grappelli_safe"
 AWS_ACCESS_KEY = None
 AWS_SECRET_KEY = None
 
+AWS_BUCKET = 'davinci-institute'
+
+RECORDING_PATH = None
+
 
 #########################
 # OPTIONAL APPLICATIONS #
