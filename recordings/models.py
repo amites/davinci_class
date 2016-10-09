@@ -8,7 +8,7 @@ from django.db import models
 
 
 class ClassRecording(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, null=True, blank=True)
     url = models.CharField(max_length=250)
     course = models.IntegerField()
     session = models.IntegerField()
@@ -17,6 +17,9 @@ class ClassRecording(models.Model):
     description = models.TextField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['session', 'class_date', 'class_part', ]
 
     def __unicode__(self):
         return '{} - {} - {} - {}'.format(self.name, self.session,
@@ -39,10 +42,16 @@ class ClassRecording(models.Model):
                         if result.group(2).strip('-').count('-') \
                         else '%Y%m%d'
                     self.class_date = \
-                        datetime.strptime(result.group(2), date_str)
+                        datetime.strptime(result.group(2).strip('-'), date_str)
                 if not self.name:
-                    self.name = result.group(3) if result.group(3) else ''
+                    if result.group(3):
+                        name = re.sub(r'pt\d+', '', result.group(3)).strip('-')
+                        self.name = name.replace('-', ' ').title()
+                    else:
+                        self.name = ''
                 if not self.session:
                     self.session = int(result.group(1))
 
         super(ClassRecording, self).save(*args, **kwargs)
+
+
