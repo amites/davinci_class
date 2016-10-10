@@ -19,7 +19,7 @@ class ClassRecording(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['session', 'class_date', 'class_part', ]
+        ordering = ['session', 'class_date', '-class_part', ]
 
     def __unicode__(self):
         return '{} - {} - {} - {}'.format(self.name, self.session,

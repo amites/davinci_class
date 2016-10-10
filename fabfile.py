@@ -50,9 +50,10 @@ env.key_filename = conf.get("SSH_KEY_PATH", None)
 env.hosts = conf.get("HOSTS", [""])
 
 env.proj_name = conf.get("PROJECT_NAME", env.proj_app)
-env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s/.virtualenvs" % env.user)
+env.venv_home = conf.get("VIRTUALENV_HOME",
+                         "/mnt/{0}/virtualenv".format(env.proj_name))
 env.venv_path = join(env.venv_home, env.proj_name)
-env.proj_path = "/home/%s/mezzanine/%s" % (env.user, env.proj_name)
+env.proj_path = "/mnt/{0}/virtualenv/{0}".format(env.proj_name)
 env.manage = "%s/bin/python %s/manage.py" % (env.venv_path, env.proj_path)
 env.domains = conf.get("DOMAINS", [conf.get("LIVE_HOSTNAME", env.hosts[0])])
 env.domains_nginx = " ".join(env.domains)
@@ -682,3 +683,10 @@ def all():
     install()
     if create():
         deploy()
+
+
+###############
+# Alvin's Fab #
+###############
+
+
