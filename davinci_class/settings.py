@@ -305,6 +305,8 @@ AWS_BUCKET = 'davinci-institute'
 
 RECORDING_PATH = None
 
+SLACK_API_TOKEN = None
+
 
 #########################
 # OPTIONAL APPLICATIONS #
