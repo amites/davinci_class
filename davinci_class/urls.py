@@ -5,9 +5,9 @@ from django.conf.urls import include, url
 from django.contrib import admin
 # from django.views.i18n import set_language
 
-from mezzanine.core.views import direct_to_template
+# from mezzanine.core.views import direct_to_template
 # from mezzanine.conf import settings
-import mezzanine_pagedown.urls
+# import mezzanine_pagedown.urls
 
 import recordings.urls
 
@@ -18,10 +18,13 @@ admin.autodiscover()
 # to the project's homepage.
 
 urlpatterns = [
+    url(r'^blog/', include('zinnia.urls')),
+    url(r'^comments/', include('django_comments.urls')),
+
     # Change the admin prefix here to use an alternate URL for the
     # admin interface, which would be marginally more secure.
     url("^admin/", include(admin.site.urls)),
-    url("^pagedown/", include(mezzanine_pagedown.urls)),
+    # url("^pagedown/", include(mezzanine_pagedown.urls)),
 
     url(r'^recordings/', include(recordings.urls, namespace='recordings')),
 
@@ -35,7 +38,7 @@ urlpatterns = [
     # one homepage pattern, so if you use a different one, comment this
     # one out.
 
-    url("^$", direct_to_template, {"template": "index.html"}, name="home"),
+    # url("^$", direct_to_template, {"template": "index.html"}, name="home"),
 
     # HOMEPAGE AS AN EDITABLE PAGE IN THE PAGE TREE
     # ---------------------------------------------
@@ -75,7 +78,7 @@ urlpatterns = [
     # ``mezzanine.urls``, go right ahead and take the parts you want
     # from it, and use them directly below instead of using
     # ``mezzanine.urls``.
-    url("^", include("mezzanine.urls")),
+    # url("^", include("mezzanine.urls")),
 
     # MOUNTING MEZZANINE UNDER A PREFIX
     # ---------------------------------
@@ -97,8 +100,8 @@ urlpatterns = [
 
 # Adds ``STATIC_URL`` to the context of error pages, so that error
 # pages can use JS, CSS and images.
-handler404 = "mezzanine.core.views.page_not_found"
-handler500 = "mezzanine.core.views.server_error"
+# handler404 = "mezzanine.core.views.page_not_found"
+# handler500 = "mezzanine.core.views.server_error"
 
 
 # urlpatterns = i18n_patterns(

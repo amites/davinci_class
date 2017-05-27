@@ -209,30 +209,51 @@ MEDIA_ROOT = path.join(PROJECT_ROOT, *MEDIA_URL.strip("/").split("/"))
 ROOT_URLCONF = "%s.urls" % PROJECT_APP
 
 TEMPLATES = [
+    # Mezzanine
+
+    # {
+    #     "BACKEND": "django.template.backends.django.DjangoTemplates",
+    #     "DIRS": [
+    #         path.join(PROJECT_ROOT, "templates")
+    #     ],
+    #     "APP_DIRS": True,
+    #     "OPTIONS": {
+    #         "context_processors": [
+    #             "django.contrib.auth.context_processors.auth",
+    #             "django.contrib.messages.context_processors.messages",
+    #             "django.template.context_processors.debug",
+    #             "django.template.context_processors.i18n",
+    #             "django.template.context_processors.static",
+    #             "django.template.context_processors.media",
+    #             "django.template.context_processors.request",
+    #             "django.template.context_processors.tz",
+    #             "mezzanine.conf.context_processors.settings",
+    #             "mezzanine.pages.context_processors.page",
+    #         ],
+    #         "builtins": [
+    #             "mezzanine.template.loader_tags",
+    #         ],
+    #     },
+    # },
+
+    # Zinnia
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             path.join(PROJECT_ROOT, "templates")
         ],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.debug",
-                "django.template.context_processors.i18n",
-                "django.template.context_processors.static",
-                "django.template.context_processors.media",
-                "django.template.context_processors.request",
-                "django.template.context_processors.tz",
-                "mezzanine.conf.context_processors.settings",
-                "mezzanine.pages.context_processors.page",
-            ],
-            "builtins": [
-                "mezzanine.template.loader_tags",
-            ],
-        },
-    },
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.request',
+                'django.contrib.messages.context_processors.messages',
+                'zinnia.context_processors.version',  # Optional
+            ]
+        }
+    }
+
 ]
 
 
@@ -242,7 +263,7 @@ TEMPLATES = [
 
 INSTALLED_APPS = (
     "django.contrib.admin",
-    'mezzanine_pagedown',
+    # 'mezzanine_pagedown',
 
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -251,23 +272,28 @@ INSTALLED_APPS = (
     "django.contrib.sites",
     "django.contrib.sitemaps",
     "django.contrib.staticfiles",
-    "mezzanine.boot",
-    "mezzanine.conf",
-    "mezzanine.core",
-    "mezzanine.generic",
-    "mezzanine.pages",
-    "mezzanine.blog",
-    "mezzanine.forms",
-    # "mezzanine.galleries",
+    # "mezzanine.boot",
+    # "mezzanine.conf",
+    # "mezzanine.core",
+    # "mezzanine.generic",
+    # "mezzanine.pages",
+    # "mezzanine.blog",
+    # "mezzanine.forms",
+    # # "mezzanine.galleries",
 
     'recordings',
+
+    'django_comments',
+    'mptt',
+    'tagging',
+    'zinnia',
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
 # these middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
 MIDDLEWARE_CLASSES = (
-    "mezzanine.core.middleware.UpdateCacheMiddleware",
+    # "mezzanine.core.middleware.UpdateCacheMiddleware",
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     # Uncomment if using internationalisation or localisation
@@ -279,20 +305,20 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    "mezzanine.core.request.CurrentRequestMiddleware",
-    "mezzanine.core.middleware.RedirectFallbackMiddleware",
-    "mezzanine.core.middleware.TemplateForDeviceMiddleware",
-    "mezzanine.core.middleware.TemplateForHostMiddleware",
-    "mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware",
-    "mezzanine.core.middleware.SitePermissionMiddleware",
-    "mezzanine.pages.middleware.PageMiddleware",
-    "mezzanine.core.middleware.FetchFromCacheMiddleware",
+    # "mezzanine.core.request.CurrentRequestMiddleware",
+    # "mezzanine.core.middleware.RedirectFallbackMiddleware",
+    # "mezzanine.core.middleware.TemplateForDeviceMiddleware",
+    # "mezzanine.core.middleware.TemplateForHostMiddleware",
+    # "mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware",
+    # "mezzanine.core.middleware.SitePermissionMiddleware",
+    # "mezzanine.pages.middleware.PageMiddleware",
+    # "mezzanine.core.middleware.FetchFromCacheMiddleware",
 )
 
 # Store these package names here as they may change in the future since
 # at the moment we are using custom forks of them.
-PACKAGE_NAME_FILEBROWSER = "filebrowser_safe"
-PACKAGE_NAME_GRAPPELLI = "grappelli_safe"
+# PACKAGE_NAME_FILEBROWSER = "filebrowser_safe"
+# PACKAGE_NAME_GRAPPELLI = "grappelli_safe"
 
 ########
 # BOTO #
@@ -317,8 +343,8 @@ OPTIONAL_APPS = (
     "debug_toolbar",
     "django_extensions",
     "compressor",
-    PACKAGE_NAME_FILEBROWSER,
-    PACKAGE_NAME_GRAPPELLI,
+    # PACKAGE_NAME_FILEBROWSER,
+    # PACKAGE_NAME_GRAPPELLI,
 )
 
 ##################
@@ -354,9 +380,9 @@ if path.exists(f):
 # without Mezzanine installed, as the case may be when using the
 # fabfile, where setting the dynamic settings below isn't strictly
 # required.
-try:
-    from mezzanine.utils.conf import set_dynamic_settings
-except ImportError:
-    pass
-else:
-    set_dynamic_settings(globals())
+# try:
+#     from mezzanine.utils.conf import set_dynamic_settings
+# except ImportError:
+#     pass
+# else:
+#     set_dynamic_settings(globals())
