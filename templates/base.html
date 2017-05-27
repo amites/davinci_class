@@ -65,8 +65,8 @@
                         Recordings <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{% url 'recordings:list' 2 %}">{% trans 'Spring 2017' %}</a></li>
-                        <li><a href="{% url 'recordings:list' 1 %}">{% trans 'Fall 2016' %}</a></li>
+                        <li><a href="{% url 'recordings:list' '2017-spring' %}">{% trans 'Spring 2017' %}</a></li>
+                        <li><a href="{% url 'recordings:list' '2016-fall' %}">{% trans 'Fall 2016' %}</a></li>
                     </ul>
                 </li>
 {#                {% recordings_dropdown %}#}
@@ -132,7 +132,7 @@
                 {% endif %}
 
                 <div class="panel panel-default">
-                    <a href="https://github.com/amites/davinci_class_2016/">
+                    <a href="https://github.com/amites/davinci_2017_spring">
                         {% trans 'Class Github Repository' %}
                     </a>
                     <br>

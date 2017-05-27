@@ -26,9 +26,12 @@ class CourseResource(models.Model):
 
 @python_2_unicode_compatible
 class Course(CourseResource):
+    slug = models.SlugField(unique=True, db_index=True)
+
     date_start = models.DateField()
     date_end = models.DateField(null=True, blank=True)
-    slug = models.SlugField()
+
+    github_url = models.URLField()
 
     class Meta:
         db_table = 'course'
@@ -110,3 +113,5 @@ class SessionReference(CourseResource):
 #     course = models.ForeignKey(Course)
 #     full_name = models.CharField(max_length=100)
 #     email = models.CharField(max_length=200)
+
+
