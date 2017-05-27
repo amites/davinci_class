@@ -6,13 +6,10 @@ from recordings.models import ClassRecording, COURSE_CHOICES
 
 
 def recording_list(request, course=None):
-    if not course:
-        course = settings.CURRENT_COURSE
     context = {
         'recordings':
             ClassRecording.objects.filter(
-                course=course
-            ).order_by('class_date', 'class_part'),
+                session__course__slug=course).order_by('class_date', 'class_part'),
         'course': dict(COURSE_CHOICES).get(course, ''),
     }
     return render(request, 'recordings/list.html', context)
