@@ -7,16 +7,51 @@ from django.conf import settings
 from django.db import models
 
 
-class ClassRecording(models.Model):
+COURSE_CHOICES = (
+    (1, 'Fall 2016'),
+    (2, 'Spring 2017'),
+)
+
+
+class CourseResource(models.Model):
     name = models.CharField(max_length=250, null=True, blank=True)
-    url = models.CharField(max_length=250)
-    course = models.IntegerField()
-    session = models.IntegerField()
-    class_date = models.DateField()
-    class_part = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Course(CourseResource):
+    date_start = models.DateField()
+    date_end = models.DateField(null=True, blank=True)
+    slug = models.SlugField()
+
+    class Meta:
+        db_table = 'course'
+
+
+class CourseSession(CourseResource):
+    course = models.ForeignKey(Course)
+    num = models.PositiveIntegerField(verbose_name='Course Number')
+    date = models.DateField(default=datetime.today())
+    slides_url = models.URLField(max_length=250, null=True, blank=True)
+    slug = models.SlugField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'course_session'
+
+
+class ClassRecording(CourseResource):
+    course = models.IntegerField(choices=COURSE_CHOICES)
+    url = models.CharField(max_length=250)
+
+    # TODO: migrate session to FK vs int
+    session = models.IntegerField()
+    session_fk = models.ForeignKey(CourseSession, null=True, blank=True)
+    class_date = models.DateField()
+    class_part = models.IntegerField()
 
     class Meta:
         ordering = ['session', 'class_date', '-class_part', ]
@@ -27,7 +62,7 @@ class ClassRecording(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.course:
-            self.course = settings.COURSE
+            self.course = settings.CURRENT_COURSE
         if self.url:
             if not self.class_part:
                 result_part = re.search(r'pt(\d+)', self.url)
@@ -55,3 +90,24 @@ class ClassRecording(models.Model):
         super(ClassRecording, self).save(*args, **kwargs)
 
 
+class CodewarsProblem(CourseResource):
+    session = models.ForeignKey(CourseSession)
+    url = models.CharField(max_length=250)
+    url_solution = models.URLField(max_length=250, null=True, blank=True)
+    recording = models.ForeignKey(ClassRecording, null=True, blank=True)
+
+    class Meta:
+        db_table = 'course_session_codewars'
+
+
+class SessionReference(CourseResource):
+    session = models.ForeignKey(CourseSession)
+    recording = models.ForeignKey(ClassRecording, null=True, blank=True)
+
+    class Meta:
+        db_table = 'course_session_reference'
+
+# class Student(CourseResource):
+#     course = models.ForeignKey(Course)
+#     full_name = models.CharField(max_length=100)
+#     email = models.CharField(max_length=200)

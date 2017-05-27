@@ -6,7 +6,7 @@ from os import path
 # DAVINCI SETTINGS #
 ####################
 
-COURSE = 1
+CURRENT_COURSE = 2
 
 
 ######################

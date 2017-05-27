@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        Recordings <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+        {% for course_id, course_name in courses %}
+            <li><a href="{% url 'recordings:list' course_id %}">{% trans course_name %}</a></li>
+        {% endfor %}
+    </ul>
+</li>

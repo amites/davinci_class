@@ -2,10 +2,10 @@
 {% load i18n %}
 
 {% block meta_title %}{% trans "Home" %}{% endblock %}
-{% block title %}{% trans "Class Recordings" %}{% endblock %}
+{% block title %}{% trans "Class Recordings" %} {{ course }}{% endblock %}
 
 {% block breadcrumb_menu %}
-    <li class="active">{% trans "Recordings" %}</li>
+    <li class="active">{% trans "Recordings" %} {{ course }}</li>
 {% endblock %}
 
 {% block main %}

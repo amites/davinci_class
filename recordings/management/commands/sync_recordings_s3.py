@@ -196,8 +196,7 @@ class Command(SyncS3Command):
                 continue
             except ClassRecording.DoesNotExist:
                 pass
-            self.stdout.write(self.style.NOTICE(
-                'Preparing to upload {}'.format(file_name)))
+            self.stdout.write(self.style.NOTICE('Preparing to upload {}'.format(file_name)))
             file_path = os.path.join(recording_path, file_name)
             file_size = os.stat(file_path).st_size
             mp = bucket.initiate_multipart_upload(file_name)
@@ -206,9 +205,8 @@ class Command(SyncS3Command):
 
             for i in range(chunk_count):
                 offset = chunk_size * i
-                with FileChunkIO(
-                        file_path, 'r', offset=offset,
-                        bytes=min(chunk_size, file_size - offset)) as fp:
+                with FileChunkIO(file_path, 'r', offset=offset,
+                                 bytes=min(chunk_size, file_size - offset)) as fp:
                     mp.upload_part_from_file(fp, part_num=i + 1)
             mp.complete_upload()
             bucket.make_public()
