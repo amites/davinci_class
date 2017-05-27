@@ -1,0 +1,65 @@
+# http://editorconfig.org
+
+#########################################################################
+#    _________        ___.                   ______________________  ___
+#    \_   ___ \___.__.\_ |__   ___________  /  _____/\______   \   \/  /
+#    /    \  \<   |  | | __ \_/ __ \_  __ \/   \  ___ |       _/\     /
+#    \     \___\___  | | \_\ \  ___/|  | \/\    \_\  \|    |   \/     \
+#     \______  / ____| |___  /\___  >__|    \______  /|____|_  /___/\  \
+#            \/\/          \/     \/               \/        \/      \_/
+#
+# CYBERGRX CONFIDENTIAL
+# __________________
+#
+#  [2016] CyberGRX Incorporated
+#  All Rights Reserved.
+#
+# NOTICE:  All information contained herein is, and remains
+# the property of CyberGRX Incorporated and its suppliers,
+# if any.  The intellectual and technical concepts contained
+# herein are proprietary to CyberGRX Incorporated
+# and its suppliers and may be covered by U.S. and Foreign Patents,
+# patents in process, and are protected by trade secret or copyright law.
+# Dissemination of this information or reproduction of this material
+# is strictly forbidden unless prior written permission is obtained
+# from CyberGRX Incorporated.
+#
+
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+end_of_line = lf
+charset = utf-8
+
+[*.py]
+max_line_length = 119
+
+[*.{html,js,css,scss,json}]
+indent_size = 2
+
+# JSON files contain newlines inconsistently
+[*.json]
+insert_final_newline = ignore
+
+# Makefiles always use tabs for indentation
+[Makefile]
+indent_style = tab
+
+# Batch files use tabs for indentation
+[*.bat]
+indent_style = tab
+
+# Compiled / ignore
+[**.min.js]
+indent_style = ignore
+insert_final_newline = ignore
+
+# 3rd Party / ignore
+[**/{node_modules,media}/**]
+indent_style = ignore
+indent_size = ignore
+insert_final_newline = ignore

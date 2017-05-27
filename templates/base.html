@@ -1,191 +1,101 @@
-<!doctype html>
-<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_BIDI %} dir="rtl"{% endif %}>
-{% load pages_tags mezzanine_tags i18n staticfiles blog_tags %}
+{% extends "zinnia/skeleton.html" %}
+{% load i18n %}
+{% load zinnia %}
 
-<head>
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="{% block meta_keywords %}{% endblock %}">
-    <meta name="description" content="{% block meta_description %}{% endblock %}">
-    <title>{% block meta_title %}{% endblock %} | Programming with Python</title>
-    <link rel="shortcut icon" href="{% static "img/favicon.ico" %}">
+{% block meta-keywords %}{% get_tags as entry_tags %}{{ entry_tags|join:", "}}{% endblock meta-keywords %}
 
-    {% ifinstalled mezzanine.blog %}
-        <link rel="alternate" type="application/rss+xml" title="RSS" href="{% url "blog_post_feed" "rss" %}">
-        <link rel="alternate" type="application/atom+xml" title="Atom" href="{% url "blog_post_feed" "atom" %}">
-    {% endifinstalled %}
+{% block meta %}
+    <meta name="generator" content="Zinnia {{ ZINNIA_VERSION }}" />
+{% endblock meta %}
 
-    {% compress css %}
-        <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
-        <link rel="stylesheet" href="{% static "css/mezzanine.css" %}">
-        <link rel="stylesheet" href="{% static "css/bootstrap-theme.css" %}">
-        {% block extra_css %}{% endblock %}
-    {% endcompress %}
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/default.min.css">
+{% block link %}
+    <link rel="index" href="{% url 'zinnia:entry_archive_index' %}" />
+    <link rel="author" type="text/plain" href="{% url 'zinnia:humans' %}" />
+    <link rel="EditURI" type="application/rsd+xml" href="{% url 'zinnia:rsd' %}" />
+    <link rel="wlwmanifest" type="application/wlwmanifest+xml" href="{% url 'zinnia:wlwmanifest' %}" />
+    <link rel="search" type="application/opensearchdescription+xml" title="Zinnia's Weblog" href="{% url 'zinnia:opensearch' %}" />
+    <link rel="alternate" type="application/rss+xml" title="{% trans "RSS feed of last entries" %}" href="{% url 'zinnia:entry_feed' %}" />
+    <link rel="alternate" type="application/rss+xml" title="{% trans "RSS feed of last discussions" %}" href="{% url 'zinnia:discussion_feed' %}" />
+    {% get_archives_entries "zinnia/tags/entries_archives_link.html" %}
+{% endblock link %}
 
-    {% compress js %}
-        <script src="{% static "mezzanine/js/"|add:settings.JQUERY_FILENAME %}"></script>
-        <script src="{% static "js/bootstrap.js" %}"></script>
-        <script src="{% static "js/bootstrap-extras.js" %}"></script>
-    {% endcompress %}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
-    {% block extra_js %}{% endblock %}
+{% block breadcrumbs %}
+  {% trans "Blog" as root_name %}
+  {% zinnia_breadcrumbs root_name %}
+{% endblock breadcrumbs %}
 
-<!--[if lt IE 9]>
-<script src="{% static "js/html5shiv.js" %}"></script>
-<script src="{% static "js/respond.min.js" %}"></script>
-<![endif]-->
-
-    {% block extra_head %}{% endblock %}
-</head>
-
-<body id="{% block body_id %}body{% endblock %}">
-
-<div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">{% trans "Toggle Navigation" %}</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            {% block navbar_title %}
-                <a class="navbar-brand" href="/">{% trans 'Programming with Python' %}</a>
-                <p class="navbar-text visible-lg">{% trans 'Drinking from the firehose' %}</p>
-            {% endblock %}
-
-        </div>
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="{% url 'blog_post_list' %}">{% trans 'Blog' %}</a></li>
-
-                <li role="presentation" class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                        Recordings <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{% url 'recordings:list' 2 %}">{% trans 'Spring 2017' %}</a></li>
-                        <li><a href="{% url 'recordings:list' 1 %}">{% trans 'Fall 2016' %}</a></li>
-                    </ul>
-                </li>
-{#                {% recordings_dropdown %}#}
-            </ul>
-        </div>
-{% comment %}
-    <div class="navbar-c/ulapse collapse">
-        {% block navbar_search_form %}{% search_form "all" %}{% endblock %}
-        <ul class="nav navbar-nav">
-            <li><a href="{% url 'recordings:list' %}"></a></li>
-        </ul>
-        {% block navbar_dropdown_menu %}
-            {% page_menu "pages/menus/dropdown.html" %}
-        {% endblock%}
-    </div>
-{% endcomment %}
-    </div>
-</div>
-
-<div class="container">
-
-    {% nevercache %}
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="alert alert-dismissable alert-{{ message.tags }}" data-alert="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endnevercache %}
-
-    <h1>{% block title %}{% endblock %}</h1>
-
-    <ul class="breadcrumb">
-        {% spaceless %}
-            {% block breadcrumb_menu %}{% page_menu "pages/menus/breadcrumb.html" %}{% endblock %}
-        {% endspaceless %}
-    </ul>
-
-</div>
-
-<div class="container">
-    <div class="row">
-
-        <div class="col-md-2 left">
-            {% block left_panel %}
-                {#        <div class="panel panel-default tree">{% page_menu "pages/menus/tree.html" %}</div>#}
-                {% blog_recent_posts 20 as recent_posts %}
-                {% if recent_posts %}
-                    <h3>{% trans "Recent Posts" %}</h3>
-                    <ul class="unstyled recent-posts">
-                        {% for recent_post in recent_posts %}
-                            <li><a href="{{ recent_post.get_absolute_url }}">
-                                {{ recent_post.title }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>{% trans 'Welcome to your class.' %}</p>
-                {% endif %}
-
-                <div class="panel panel-default">
-                    <a href="https://github.com/amites/davinci_class_2016/">
-                        {% trans 'Class Github Repository' %}
-                    </a>
-                    <br>
-                    <a href="https://github.com/amites/davinci_class_2016/tree/pets/hello_world">
-                        <i>{% trans 'Additional Model & Form References' %}</i>
-                    </a>
-                </div>
-            {% endblock %}
-        </div>
-
-        <div class="col-md-7 middle">
-            {% block main %}{% endblock %}
-        </div>
-
-        <div class="col-md-3 right">
-
-            {% comment %}
-    {% nevercache %}
-{#    {% include "includes/user_panel.html" %}#}
-    {% endnevercache %}
-    <div class="panel panel-default">
-        <div class="panel-body">
-            {% block right_panel %}
-            {% endblock %}
-        </div>
-    </div>
-</div>
-{% endcomment %}
-
-        </div>
-    </div>
-
-    <footer>
-        <div class="container">
-            {% page_menu "pages/menus/footer.html" %}
-
-            <div class="row">
-                <p class="site-info text-center"></p>
-            </div>
-        </div>
-    </footer>
-
-    {% block footer_js %}
-        <script>
-            {#        hljs.initHighlightingOnLoad();#}
-            $(document).ready(function () {
-                $('pre').each(function (i, block) {
-                    hljs.highlightBlock(block);
-                });
-            });
-        </script>
-        {% include "includes/footer_scripts.html" %}
-    {% endblock %}
-
-</body>
-</html>
+<aside id="widget-categories" class="widget panel panel-default">
+  <div class="panel-heading">
+    {% trans "Categories" %}
+  </div>
+  {% get_categories %}
+</aside>
+<aside id="widget-authors" class="widget panel panel-default">
+  <div class="panel-heading">
+    {% trans "Authors" %}
+  </div>
+  {% get_authors %}
+</aside>
+<aside id="widget-recents" class="widget panel panel-default">
+  <div class="panel-heading">
+    {% trans "Recent entries" %}
+  </div>
+  {% get_recent_entries %}
+</aside>
+<aside id="widget-comments" class="widget panel panel-default">
+  <div class="panel-heading">
+    {% trans "Recent comments" %}
+  </div>
+  {% get_recent_comments %}
+</aside>
+<aside id="widget-linkbacks" class="widget panel panel-default">
+  <div class="panel-heading">
+    {% trans "Recent linkbacks" %}
+  </div>
+  {% get_recent_linkbacks %}
+</aside>
+<aside id="widget-randoms" class="widget panel panel-default">
+  <div class="panel-heading">
+    {% trans "Random entries" %}
+  </div>
+  {% get_random_entries %}
+</aside>
+<aside id="widget-populars" class="widget panel panel-default">
+  <div class="panel-heading">
+    {% trans "Popular entries" %}
+  </div>
+  {% get_popular_entries %}
+</aside>
+{% if user.is_authenticated %}
+<aside id="widget-tools" class="widget panel panel-danger">
+  <div class="panel-heading">
+    {% trans "Tools" %}
+  </div>
+  <ul class="list-group">
+    {% if perms.zinnia %}
+    <li class="list-group-item">
+      <a href="{% url 'admin:app_list' 'zinnia' %}" title="{% trans "Dashboard" %}">
+        <span class="glyphicon glyphicon-book"></span>
+        {% trans "Dashboard" %}
+      </a>
+    </li>
+    {% endif %}
+    {% if perms.zinnia.add_entry %}
+    <li class="list-group-item">
+      <a href="{% url 'admin:zinnia_entry_add' %}" title="{% trans "Post an entry" %}">
+        <span class="glyphicon glyphicon-pencil"></span>
+        {% trans "Post an entry" %}
+      </a>
+    </li>
+    {% endif %}
+    {% block admin-tools %}
+    {% endblock admin-tools %}
+    <li class="list-group-item">
+      <a href="{% url 'admin:logout' %}" title="{% trans "Log out" %}">
+        <span class="glyphicon glyphicon-off"></span>
+        {% trans "Log out" %}
+      </a>
+    </li>
+  </ul>
+</aside>
+{% endif %}

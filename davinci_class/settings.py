@@ -190,9 +190,10 @@ STATIC_URL = "/static/"
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = path.join(PROJECT_ROOT, STATIC_URL.strip("/"))
+STATIC_ROOT = path.join(PROJECT_ROOT, 'local_static')
 
 STATICFILES_DIRS = [
+    path.join(BASE_DIR, 'static'),
     path.join(BASE_DIR, 'recordings', 'static'),
 ]
 
@@ -262,6 +263,11 @@ TEMPLATES = [
 ################
 
 INSTALLED_APPS = (
+    # 'admin_tools',
+    # 'admin_tools.theming',
+    # 'admin_tools.menu',
+    # 'admin_tools.dashboard',
+    # 'admin_tools_zinnia',
     "django.contrib.admin",
     # 'mezzanine_pagedown',
 
@@ -287,6 +293,10 @@ INSTALLED_APPS = (
     'mptt',
     'tagging',
     'zinnia',
+
+    'django_extensions',
+
+
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
@@ -334,18 +344,25 @@ RECORDING_PATH = None
 SLACK_API_TOKEN = None
 
 
+##########
+# ZINNIA #
+##########
+
+ZINNIA_MARKUP_LANGUAGE = 'markdown'
+
+
 #########################
 # OPTIONAL APPLICATIONS #
 #########################
 
-# These will be added to ``INSTALLED_APPS``, only if available.
-OPTIONAL_APPS = (
-    "debug_toolbar",
-    "django_extensions",
-    "compressor",
-    # PACKAGE_NAME_FILEBROWSER,
-    # PACKAGE_NAME_GRAPPELLI,
-)
+# # These will be added to ``INSTALLED_APPS``, only if available.
+# OPTIONAL_APPS = (
+#     "debug_toolbar",
+#     "django_extensions",
+#     "compressor",
+#     # PACKAGE_NAME_FILEBROWSER,
+#     # PACKAGE_NAME_GRAPPELLI,
+# )
 
 ##################
 # LOCAL SETTINGS #

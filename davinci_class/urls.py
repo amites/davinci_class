@@ -4,6 +4,7 @@ from django.conf.urls import include, url
 # from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 # from django.views.i18n import set_language
+from django.views.generic import RedirectView
 
 # from mezzanine.core.views import direct_to_template
 # from mezzanine.conf import settings
@@ -21,6 +22,8 @@ urlpatterns = [
     url(r'^blog/', include('zinnia.urls')),
     url(r'^comments/', include('django_comments.urls')),
 
+    url(r'^admin/tools/', include('admin_tools.urls')),
+    url(r'^admin/', include(admin.site.urls)),
     # Change the admin prefix here to use an alternate URL for the
     # admin interface, which would be marginally more secure.
     url("^admin/", include(admin.site.urls)),
@@ -95,7 +98,8 @@ urlpatterns = [
     # need to use the ``SITE_PREFIX`` setting as well.
 
     # ("^%s/" % settings.SITE_PREFIX, include("mezzanine.urls"))
-
+    url(r'^$', RedirectView.as_view(url='/blog/',
+                                    permanent=False), name='home'),
 ]
 
 # Adds ``STATIC_URL`` to the context of error pages, so that error

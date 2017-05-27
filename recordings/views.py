@@ -12,10 +12,15 @@ def recording_list(request, course=None):
     else:
         kwargs['session__course__slug'] = course
 
-    recordings = ClassRecording.objects.filter(**kwargs).order_by('session__date', 'class_part')
+    recordings = ClassRecording.objects.filter(**kwargs).order_by('session__date',
+                                                                  'class_part')
+    if recordings:
+        course = recordings[0].session.course
+    else:
+        course = None
     context = {
         'recordings': recordings,
-        'session': recordings[0].session,
+        'course': course,
     }
     return render(request, 'recordings/list.html', context)
 
