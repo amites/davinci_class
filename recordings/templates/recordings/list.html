@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block meta_title %}{% trans "Home" %}{% endblock %}
-{% block title %}{% trans "Class Recordings" %} {{ course }}{% endblock %}
+{% block title %}{% trans "Session recordings for" %} {{ session.course.name }}{% endblock %}
 
 {% block breadcrumb_menu %}
     <li class="active">{% trans "Recordings" %} {{ course }}</li>
@@ -12,7 +12,7 @@
     <ul>
         {% for recording in recordings %}
             <li><a href="{{ recording.url }}">
-                {% trans 'Class' %} {{ session.num }}
+                {% trans 'Class' %} {{ recording.session.num }}
                 - {{ recording.session.date }}
                 {% if recording.name %}- {{ recording.name }}{% endif %}
                 - {% trans 'Part' %} {{ recording.class_part }}
