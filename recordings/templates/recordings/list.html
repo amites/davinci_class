@@ -12,8 +12,8 @@
     <ul>
         {% for recording in recordings %}
             <li><a href="{{ recording.url }}">
-                {% trans 'Class' %} {{ recording.session }}
-                - {{ recording.class_date }}
+                {% trans 'Class' %} {{ session.num }}
+                - {{ recording.session.date }}
                 {% if recording.name %}- {{ recording.name }}{% endif %}
                 - {% trans 'Part' %} {{ recording.class_part }}
             </a></li>

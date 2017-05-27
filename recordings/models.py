@@ -64,8 +64,8 @@ class ClassRecording(CourseResource):
         ordering = ['session', '-class_part', ]
 
     def __unicode__(self):
-        return '{} - {} - {} - {}'.format(self.name, self.session,
-                                          self.class_date, self.class_part)
+        return '{} - {} - {} - {}'.format(self.name, self.session.num,
+                                          self.session.date, self.class_part)
 
     def save(self, *args, **kwargs):
         if self.url:
