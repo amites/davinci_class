@@ -90,7 +90,7 @@ class ClassRecording(CourseResource):
 
 
 class CodeWarsProblem(CourseResource):
-    session = models.ForeignKey(CourseSession)
+    session = models.ForeignKey(CourseSession, null=True, blank=True)
     url = models.CharField(max_length=250)
     url_solution = models.URLField(max_length=250, null=True, blank=True)
     recording = models.ForeignKey(ClassRecording, null=True, blank=True)
