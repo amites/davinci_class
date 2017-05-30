@@ -8,7 +8,7 @@
 
 .coverage
 local_settings.py
-/static
+local_*
 
 *.conf
 rtmbot.json
