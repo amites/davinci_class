@@ -7,21 +7,13 @@ from django.conf import settings
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
+from recordings.models._base import CourseResource
+
 
 COURSE_CHOICES = (
     (1, 'Fall 2016'),
     (2, 'Spring 2017'),
 )
-
-
-class CourseResource(models.Model):
-    name = models.CharField(max_length=250, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 @python_2_unicode_compatible
