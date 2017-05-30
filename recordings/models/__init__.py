@@ -1,5 +1,6 @@
+from recordings.models.course import Course, CourseSession
 from recordings.models.models import (
-    ClassRecording, Course, CourseSession, CodeWarsProblem,
+    ClassRecording, CodeWarsProblem,
     SessionReference,
     COURSE_CHOICES)
 from recordings.models.people import Student
