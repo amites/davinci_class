@@ -1,6 +1,7 @@
 from django import template
+from django.conf import settings
 
-from recordings.models import ClassRecording, COURSE_CHOICES
+from recordings.models import ClassRecording
 
 
 register = template.Library()
@@ -9,5 +10,5 @@ register = template.Library()
 @register.inclusion_tag('recordings/menu_dropdown.html')
 def recordings_dropdown():
     return {
-        'courses': COURSE_CHOICES,
+        'courses': settings.COURSE_CHOICES,
     }

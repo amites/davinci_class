@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
 
-from recordings.models import ClassRecording, COURSE_CHOICES
+from recordings.models import ClassRecording
 
 
 def recording_list(request, course=None):

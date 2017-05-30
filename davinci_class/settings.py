@@ -6,6 +6,12 @@ from os import path
 # DAVINCI SETTINGS #
 ####################
 
+COURSE_CHOICES = (
+    (1, 'Fall 2016'),
+    (2, 'Spring 2017'),
+)
+
+
 CURRENT_COURSE = 2
 
 
