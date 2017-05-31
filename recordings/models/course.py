@@ -37,12 +37,6 @@ class CourseSession(CourseResource):
                                         update_fields=None)
 
 
-class SessionReference(CourseResource):
-    session = models.ForeignKey(CourseSession)
-
-    class Meta:
-        db_table = 'course_session_reference'
-
 # class Student(CourseResource):
 #     course = models.ForeignKey(Course)
 #     full_name = models.CharField(max_length=100)
