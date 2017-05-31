@@ -1,11 +1,58 @@
 from __future__ import unicode_literals
 
 import re
+from datetime import datetime
 
+from django.conf import settings
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 
-from recordings.models._base import CourseResource
-from recordings.models.course import CourseSession
+
+COURSE_CHOICES = (
+    (1, 'Fall 2016'),
+    (2, 'Spring 2017'),
+)
+
+
+class CourseResource(models.Model):
+    name = models.CharField(max_length=250, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+@python_2_unicode_compatible
+class Course(CourseResource):
+    date_start = models.DateField()
+    date_end = models.DateField(null=True, blank=True)
+    slug = models.SlugField()
+
+    class Meta:
+        db_table = 'course'
+
+    def __str__(self):
+        return self.name
+
+
+class CourseSession(CourseResource):
+    course = models.ForeignKey(Course)
+    num = models.PositiveIntegerField(verbose_name='Course Number')
+    date = models.DateField(default=datetime.today())
+    slides_url = models.URLField(max_length=250, null=True, blank=True)
+    slug = models.SlugField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'course_session'
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.slug:
+            self.slug = '{}-{}'.format(self.course.slug, self.num)
+        super(CourseSession, self).save(force_insert=False, force_update=False, using=None,
+                                        update_fields=None)
 
 
 class ClassRecording(CourseResource):
@@ -43,7 +90,7 @@ class ClassRecording(CourseResource):
 
 
 class CodeWarsProblem(CourseResource):
-    session = models.ForeignKey(CourseSession)
+    session = models.ForeignKey(CourseSession, null=True, blank=True)
     url = models.CharField(max_length=250)
     url_solution = models.URLField(max_length=250, null=True, blank=True)
     recording = models.ForeignKey(ClassRecording, null=True, blank=True)
@@ -52,3 +99,14 @@ class CodeWarsProblem(CourseResource):
         db_table = 'course_session_codewars'
 
 
+class SessionReference(CourseResource):
+    session = models.ForeignKey(CourseSession)
+    recording = models.ForeignKey(ClassRecording, null=True, blank=True)
+
+    class Meta:
+        db_table = 'course_session_reference'
+
+# class Student(CourseResource):
+#     course = models.ForeignKey(Course)
+#     full_name = models.CharField(max_length=100)
+#     email = models.CharField(max_length=200)

@@ -14,10 +14,25 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ('name', 'date_start', 'slug')
 
 
+class ClassRecordingsInline(admin.TabularInline):
+    model = ClassRecording
+
+
+class SessionReferenceInline(admin.TabularInline):
+    model = SessionReference
+
+class CodeWarsProblemInline(admin.TabularInline):
+    model = CodeWarsProblem
+
+
 @admin.register(CourseSession)
 class CourseSession(admin.ModelAdmin):
     list_display = ('course', 'num')
+    inlines = [
+        ClassRecordingsInline,
+        SessionReferenceInline,
+        CodeWarsProblemInline,
+    ]
 
 
 admin.site.register(CodeWarsProblem)
-admin.site.register(SessionReference)
