@@ -4,10 +4,25 @@ from recordings.models import (ClassRecording,
                                CodeWarsProblem, Course, CourseSession, SessionReference)
 
 
+class ClassRecordingsInline(admin.StackedInline):
+    model = ClassRecording
+
+
+class SessionReferenceInline(admin.StackedInline):
+    model = SessionReference
+
+
+class CodeWarsProblemInline(admin.StackedInline):
+    model = CodeWarsProblem
+
+
 @admin.register(ClassRecording)
 class ClassRecordingAdmin(admin.ModelAdmin):
-    list_display = ('session', 'name', )
+    list_display = ('session', 'name', 'has_codewars', )
 
+    inlines = [
+        CodeWarsProblemInline,
+    ]
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
@@ -16,8 +31,12 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(CourseSession)
 class CourseSession(admin.ModelAdmin):
-    list_display = ('course', 'num')
+    list_display = ('course', 'num', 'date', )
+    inlines = [
+        ClassRecordingsInline,
+        SessionReferenceInline,
+        CodeWarsProblemInline,
+    ]
 
 
 admin.site.register(CodeWarsProblem)
-admin.site.register(SessionReference)

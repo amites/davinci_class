@@ -1,14 +1,19 @@
 {% extends "base.html" %}
 {% load i18n %}
+{%  load zinnia %}
 
 {% block meta_title %}{% trans "Home" %}{% endblock %}
 {% block title %}{% trans "Session recordings for" %} {{ session.course.name }}{% endblock %}
 
-{% block breadcrumb_menu %}
-    <li class="active">{% trans "Recordings" %} {{ course }}</li>
-{% endblock %}
+{% block breadcrumbs %}
+  <ul class="breadcrumb">
+    <li><a href="#" title="Classes">Classes</a></li>
+    <li class="active">{{ course.name }}</li>
+  </ul>
+{% endblock breadcrumbs %}
 
-{% block main %}
+
+{% block content %}
     <ul>
         {% for recording in recordings %}
             <li><a href="{{ recording.url }}">

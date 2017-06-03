@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 
 import re
-from datetime import datetime
 
-from django.conf import settings
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
+from taggit.managers import TaggableManager
+
+from recordings.models.course import CourseSession
+from recordings.models._base import CourseResource
 
 
 COURSE_CHOICES = (
@@ -14,61 +15,18 @@ COURSE_CHOICES = (
 )
 
 
-class CourseResource(models.Model):
-    name = models.CharField(max_length=250, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-
-@python_2_unicode_compatible
-class Course(CourseResource):
-    slug = models.SlugField(unique=True, db_index=True)
-
-    date_start = models.DateField()
-    date_end = models.DateField(null=True, blank=True)
-
-    github_url = models.URLField()
-
-    class Meta:
-        db_table = 'course'
-
-    def __str__(self):
-        return self.name
-
-
-class CourseSession(CourseResource):
-    course = models.ForeignKey(Course)
-    num = models.PositiveIntegerField(verbose_name='Course Number')
-    date = models.DateField(default=datetime.today())
-    slides_url = models.URLField(max_length=250, null=True, blank=True)
-    slug = models.SlugField(null=True, blank=True)
-
-    class Meta:
-        db_table = 'course_session'
-
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        if not self.slug:
-            self.slug = '{}-{}'.format(self.course.slug, self.num)
-        super(CourseSession, self).save(force_insert=False, force_update=False, using=None,
-                                        update_fields=None)
-
-
 class ClassRecording(CourseResource):
     session = models.ForeignKey(CourseSession, null=True, blank=True)
     url = models.CharField(max_length=250)
     class_part = models.IntegerField()
 
-    class Meta:
-        ordering = ['session', '-class_part', ]
+    tags = TaggableManager()
 
-    def __unicode__(self):
-        return '{} - {} - {} - {}'.format(self.name, self.session.num,
-                                          self.session.date, self.class_part)
+    class Meta:
+        ordering = ['-session', 'class_part', ]
+
+    def __str__(self):
+        return '{} - {} - {} - {}'.format(self.name, self.session.num, self.session.date, self.class_part)
 
     def save(self, *args, **kwargs):
         if self.url:
@@ -91,20 +49,40 @@ class ClassRecording(CourseResource):
 
         super(ClassRecording, self).save(*args, **kwargs)
 
+    @property
+    def has_codewars(self):
+        return bool(self.codewarsproblem_set.count())
+
 
 class CodeWarsProblem(CourseResource):
-    session = models.ForeignKey(CourseSession)
+    session = models.ForeignKey(CourseSession, null=True, blank=True)
     url = models.CharField(max_length=250)
     url_solution = models.URLField(max_length=250, null=True, blank=True)
     recording = models.ForeignKey(ClassRecording, null=True, blank=True)
 
+    tags = TaggableManager()
+
     class Meta:
         db_table = 'course_session_codewars'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.session and self.recording:
+            self.session = self.recording.session
+        super(CodeWarsProblem, self).save(*args, **kwargs)
 
 
 class SessionReference(CourseResource):
     session = models.ForeignKey(CourseSession)
     recording = models.ForeignKey(ClassRecording, null=True, blank=True)
+    url = models.URLField(null=True, blank=True)
+    gist_url = models.URLField(null=True, blank=True)
+    snippet = models.TextField(null=True, blank=True)
+    kyu = models.PositiveIntegerField(null=True, blank=True)
+
+    tags = TaggableManager()
 
     class Meta:
         db_table = 'course_session_reference'
