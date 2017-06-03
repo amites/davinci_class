@@ -34,18 +34,6 @@ conf = {
     'SSH_USER': 'ubuntu',
     'HOSTS': ['aws-dj-class', ],
 }
-if sys.argv[0].split(os.sep)[-1] in ("fab", "fab-script.py"):
-    # Ensure we import settings from the current dir
-    try:
-        conf = import_module("%s.settings" % env.proj_app).FABRIC
-        try:
-            conf["HOSTS"][0]
-        except (KeyError, ValueError):
-            raise ImportError
-    except (ImportError, AttributeError):
-        print("Aborting, no hosts defined.")
-        exit()
-
 env.db_pass = conf.get("DB_PASS", None)
 env.admin_pass = conf.get("ADMIN_PASS", None)
 env.user = conf.get("c", getuser())

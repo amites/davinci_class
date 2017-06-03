@@ -1,9 +1,7 @@
 from __future__ import unicode_literals
 
 import re
-from datetime import datetime
 
-from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
 
