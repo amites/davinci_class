@@ -12,7 +12,7 @@ class Course(CourseResource):
     date_start = models.DateField()
     date_end = models.DateField(null=True, blank=True)
     slug = models.SlugField()
-    recordings_path = models.FilePathField()
+    github_url = models.URLField(null=True)
 
     class Meta:
         db_table = 'course'

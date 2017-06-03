@@ -1,21 +1,26 @@
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
-from recordings.models import ClassRecording, CourseSession
+from recordings.models import ClassRecording, Course, CourseSession
 
 
-def course_list(request, course=None):
+def course_list(request, course_arg=None):
     kwargs = {}
-    if str(course).isdigit():
-        kwargs['course_id'] = int(course)
+    if str(course_arg).isdigit():
+        field = 'id'
+        val = int(course_arg)
     else:
-        kwargs['course__slug'] = course
+        field = 'slug'
+        val = course_arg
+
+    kwargs['course__{}'.format(field)] = val
+
 
     sessions = CourseSession.objects.filter(**kwargs).order_by('-date')
     context = {
         'sessions': sessions,
-        'course': course,
+        'course': get_object_or_404(Course, **{field: val})
     }
 
     return render(request, 'course/list.html', context)

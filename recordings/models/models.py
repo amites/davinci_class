@@ -25,7 +25,7 @@ class ClassRecording(CourseResource):
     tags = TaggableManager()
 
     class Meta:
-        ordering = ['session', 'class_part', ]
+        ordering = ['-session', 'class_part', ]
 
     def __str__(self):
         return '{} - {} - {} - {}'.format(self.name, self.session.num, self.session.date, self.class_part)
@@ -66,6 +66,9 @@ class CodeWarsProblem(CourseResource):
 
     class Meta:
         db_table = 'course_session_codewars'
+
+    def __str__(self):
+        return self.name
 
     def save(self, *args, **kwargs):
         if not self.session and self.recording:
