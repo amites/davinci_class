@@ -14,6 +14,12 @@ COURSE_CHOICES = (
 
 CURRENT_COURSE = 2
 
+SLACK_CHANNEL = '#python'
+
+RECORDING_PATH = None
+RECORDING_HOLD_PATH = None
+RECORDING_FILE_EXTENSION = 'm4a'
+
 
 ######################
 # MEZZANINE SETTINGS #
@@ -345,7 +351,6 @@ AWS_SECRET_KEY = None
 
 AWS_BUCKET = 'davinci-institute'
 
-RECORDING_PATH = None
 
 SLACK_API_TOKEN = None
 

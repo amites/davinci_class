@@ -64,6 +64,9 @@ class CodeWarsProblem(CourseResource):
 class SessionReference(CourseResource):
     session = models.ForeignKey(CourseSession)
     recording = models.ForeignKey(ClassRecording, null=True, blank=True)
+    url = models.URLField(null=True, blank=True)
+    gist_url = models.URLField(null=True, blank=True)
+    snippet = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = 'course_session_reference'

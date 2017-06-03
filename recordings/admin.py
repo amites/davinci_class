@@ -21,13 +21,14 @@ class ClassRecordingsInline(admin.TabularInline):
 class SessionReferenceInline(admin.TabularInline):
     model = SessionReference
 
+
 class CodeWarsProblemInline(admin.TabularInline):
     model = CodeWarsProblem
 
 
 @admin.register(CourseSession)
 class CourseSession(admin.ModelAdmin):
-    list_display = ('course', 'num')
+    list_display = ('course', 'num', 'date', )
     inlines = [
         ClassRecordingsInline,
         SessionReferenceInline,

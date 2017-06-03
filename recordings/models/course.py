@@ -11,6 +11,7 @@ class Course(CourseResource):
     date_start = models.DateField()
     date_end = models.DateField(null=True, blank=True)
     slug = models.SlugField()
+    recordings_path = models.FilePathField()
 
     class Meta:
         db_table = 'course'
