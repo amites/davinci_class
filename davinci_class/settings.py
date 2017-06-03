@@ -206,7 +206,7 @@ INSTALLED_APPS = (
 
     # dev
     'django_extensions',
-
+    # "debug_toolbar",
 
 )
 # List of middleware classes to use. Order is important; in the request phase,
@@ -224,11 +224,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 )
-
-# Store these package names here as they may change in the future since
-# at the moment we are using custom forks of them.
-# PACKAGE_NAME_FILEBROWSER = "filebrowser_safe"
-# PACKAGE_NAME_GRAPPELLI = "grappelli_safe"
 
 ########
 # BOTO #
@@ -256,15 +251,6 @@ ZINNIA_MARKUP_LANGUAGE = 'markdown'
 
 FORCE_LOWERCASE_TAGS = True
 
-# # These will be added to ``INSTALLED_APPS``, only if available.
-# OPTIONAL_APPS = (
-#     "debug_toolbar",
-#     "django_extensions",
-#     "compressor",
-#     # PACKAGE_NAME_FILEBROWSER,
-#     # PACKAGE_NAME_GRAPPELLI,
-# )
-
 ##################
 # LOCAL SETTINGS #
 ##################
@@ -286,21 +272,3 @@ if path.exists(f):
     module.__file__ = f
     sys.modules[module_name] = module
     exec(open(f, "rb").read())
-
-
-####################
-# DYNAMIC SETTINGS #
-####################
-
-# set_dynamic_settings() will rewrite globals based on what has been
-# defined so far, in order to provide some better defaults where
-# applicable. We also allow this settings module to be imported
-# without Mezzanine installed, as the case may be when using the
-# fabfile, where setting the dynamic settings below isn't strictly
-# required.
-# try:
-#     from mezzanine.utils.conf import set_dynamic_settings
-# except ImportError:
-#     pass
-# else:
-#     set_dynamic_settings(globals())
