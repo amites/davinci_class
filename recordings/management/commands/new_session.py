@@ -1,9 +1,12 @@
-from logging import getLogger
+import datetime
 import math
 import os
+import shutil
+from logging import getLogger
 
 from boto.s3.connection import S3Connection
 from django.conf import settings
+from django.template.defaultfilters import slugify
 from filechunkio import FileChunkIO
 from slackclient import SlackClient
 
@@ -23,7 +26,7 @@ class Command(SyncS3Command):
         self._new_recordings = []
         self.course = Course.objects.get(pk=settings.CURRENT_COURSE)
 
-        last_session = CourseSession.objects.order_by('-date').filter(course__id=settings.CURRENT_COURSE).last()
+        self.session_date = datetime.date.today()
 
         self.recording_path  = settings.RECORDING_PATH
         self.recording_hold_path = settings.RECORDING_HOLD_PATH
@@ -47,24 +50,93 @@ class Command(SyncS3Command):
 
         # add parser for course git repo to pickup new files to add to session resources
 
-    def ask_user(self):
+    def build_session(self, **kwargs):
+        # create new CourseSession
+        last_session = CourseSession.objects.filter(course__id=settings.CURRENT_COURSE).order_by('-date').last()
+
+        session_num = kwargs.get('num', last_session.num + 1)
+        session_name = input('Enter a name for the session (blank): ')
+
+        try:
+            session = CourseSession.objects.get(date=self.session_date, course=self.course)
+        except CourseSession.DoesNotExist:
+            session = CourseSession(date=self.session_date, course=self.course, num=session_num)
+
+        session.name = session_name
+        session.save()
+
+        # create ClassRecording entries
+        today_str = datetime.datetime.strftime(datetime.datetime.today(), '%Y-%m-%d')
+        session_part = 1
+
         for file_path in self._new_recordings:
             short_name = os.path.basename(file_path).rstrip(settings.RECORDING_FILE_EXTENSION).strip('.')
-        # take a list from load_files and gather user feedback about the files
+            recording_name = input('Short name for session part [{}]: '.format(' - '.join(short_name.split('--'))))
+
+            old_file_name = os.path.basename(file_path)
+            slugged_name = '--'.join([old_file_name, slugify(recording_name)])
+            file_name = '{date}--class-{session_num}--{part_num}--{name}.{ext}'.format(
+                date=today_str, session_num=session.num, part_num=old_file_name, name=slugged_name,
+                ext=settings.RECORDING_FILE_EXTENSION)
+
+            key = self.handle_session_recording_file(file_path, file_name)
+
+            if len(short_name.split('--')) > 1:
+                short_name = short_name.split('--')[1]
+            display_name = ' '.join(short_name.split('-')).title()
+            obj = ClassRecording(session=session, url=key.generate_url(expires_in=0, query_auth=False),
+                                 name=display_name, class_part=session_part)
+            obj.save()
+
+            self.get_session_codewars(obj)
+            self.get_session_resource(obj)
+
+            session_part += 1
+
+    def get_session_codewars(self, recording):
+        # ask if session is codewars
+        # if so get from user
+            # url problem
+            # url solution (github)
+            # code snippet?
         pass
 
-    def build_objects(self):
-        # create and save the different model entries
+    def get_session_resource(self, recording):
+        # ask if additional resource
+        # if so get from user
+            # url
+            # gist url
+            # parse file for snippet?
         pass
 
-    def handle_files(self):
-        # upload to S3 if not found
-        # move and rename to storage folder
-        pass
+    def handle_session_recording_file(self, file_path, file_name):
+        # upload file to bucket
+        s3_file_name = os.path.join(self.course.slug, file_name)
+        self.upload_file(file_path, s3_file_name)
+        bucket = self.get_bucket()
+        key = bucket.new_key(s3_file_name)
+
+        # move old file to new path (hold to store)
+        shutil.move(file_path, os.path.join(self.recording_path, file_name))
+        return key
 
     def announce(self):
         # post notification of new session references to slack
-        pass
+        if not settings.SLACK_API_TOKEN:
+            logger.error('No Slack Token Defined -- Aborting Post to Slack')
+            return
+        if not self.new_recordings:
+            logger.info('No new recordings to post to Slack.')
+            return
+        urls = [cr.url for cr in self.new_recordings]
+        sc = SlackClient(settings.SLACK_API_TOKEN)
+        urls_txt = '<{}>'.format('>\n<'.join(urls))
+        sc.api_call('chat.postMessage', channel=settings.SLACK_CHANNEL,
+                    text='New class recordings:\n{}'.format(urls_txt),
+                    username='davinci_class',
+                    icon_emoji=':robot_face:')
+        self.stdout.write(
+            self.style.SUCCESS('Posted \n'.format(urls_txt)))
 
     def handle(self, *args, **options):
         if options['debug']:
@@ -74,7 +146,5 @@ class Command(SyncS3Command):
             raise OSError('Directory {} does not exist or not defined.'.format(settings.RECORDING_HOLD_PATH))
 
         self.load_files()
-        self.ask_user()
-        self.build_objects()
-        self.handle_files()
-        self.announce()
+        self.build_session()
+        # self.announce()

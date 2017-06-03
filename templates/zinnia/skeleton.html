@@ -60,9 +60,13 @@
           <ul class="nav navbar-nav navbar-right">
             <li role="presentation" class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                Classes <span class="caret"></span>
+                Courses <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
+                <li><a href="{% url 'recordings:course' '2017-spring' %}">{% trans 'Spring 2017' %}</a></li>
+                <li><a href="{% url 'recordings:course' '2016-fall' %}">{% trans 'Fall 2016' %}</a></li>
+                <li role="separator" class="divider"></li>
+                  <li>Recordings</li>
                 <li><a href="{% url 'recordings:list' '2017-spring' %}">{% trans 'Spring 2017' %}</a></li>
                 <li><a href="{% url 'recordings:list' '2016-fall' %}">{% trans 'Fall 2016' %}</a></li>
               </ul>

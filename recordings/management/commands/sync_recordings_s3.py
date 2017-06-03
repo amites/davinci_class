@@ -101,6 +101,9 @@ class SyncS3Command(BaseCommand):
                 continue
             except ClassRecording.DoesNotExist:
                 pass
+
+        # TODO: plumb in use of upload_file
+        # begin dupe to upload_file
             self.stdout.write(self.style.NOTICE(
                 'Preparing to upload {}'.format(file_name)))
             file_path = os.path.join(recording_path, file_name)
@@ -117,6 +120,31 @@ class SyncS3Command(BaseCommand):
                     mp.upload_part_from_file(fp, part_num=i + 1)
             mp.complete_upload()
             bucket.make_public()
+        # end dupe
+
+    def upload_file(self, local_file_path, s3_file_path=None):
+        # TODO: add check whether local file exists
+        # TODO: add check whether file exists in s3 bucket
+        if not s3_file_path:
+            s3_file_path = os.path.basename(local_file_path)
+        bucket = self.get_bucket()
+
+        if os.path.basename(s3_file_path) in self.get_s3_files():
+            self.stdout.write(self.style.NOTICE('Skipping upload of {} -- file exists on remote'.format(s3_file_path)))
+            return
+
+        self.stdout.write(self.style.NOTICE('Preparing to upload {}'.format(s3_file_path)))
+        file_size = os.stat(local_file_path).st_size
+        mp = bucket.initiate_multipart_upload(s3_file_path)
+        chunk_size = AWS_S3_CHUNK_SIZE
+        chunk_count = int(math.ceil(file_size / float(chunk_size)))
+
+        for i in range(chunk_count):
+            offset = chunk_size * i
+            with FileChunkIO(local_file_path, 'r', offset=offset, bytes=min(chunk_size, file_size - offset)) as fp:
+                mp.upload_part_from_file(fp, part_num=i + 1)
+        mp.complete_upload()
+        bucket.make_public()
 
     def handle(self, *args, **options):
         """

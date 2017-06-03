@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load zinnia %}
+
+{% block meta_title %}{% trans "Home" %}{% endblock %}
+{% block title %}{% trans "Class Recordings" %} {{ course }}{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li><a href="#" title="Classes">Classes</a></li>
+        <li class="active">{{ course.name }}</li>
+    </ul>
+{% endblock breadcrumbs %}
+
+
+{% block content %}
+    {% for session in sessions %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    {% trans 'Class' %}
+                    {% if session.num %}{{ session.num }} - {% endif %}
+                    {% if session.name %}{{ session.name }} - {% endif %}
+                    {{ session.date }}
+                </h3>
+            </div>
+            <div class="panel-body">
+                <ul>
+                    {% if session.slides_url %}
+                        <li><a href="{{ session.slides_url }}">Session slides</a></li>
+                    {% endif %}
+
+
+                    {% if session.classrecording_set.exists %}
+                    <li> Recordings
+                        <ul>
+                            {% for recording in session.classrecording_set.all %}
+                                <li>
+                                    <a href="{{ recording.url }}">
+                                        {% trans 'Part' %} {{ recording.class_part }}
+                                        {% if recording.name %}- {{ recording.name }}{% endif %}
+                                    </a>
+                                    {% for cw in recording.codewarsproblem_set.all %}
+                                        <div class="well codewars">
+                                            <a class="codewars" href="{{ cw.url }}">{% trans 'Codewars' %}: {{ cw.name }}</a>
+                                            <br>
+                                            <a href="{{ cw.solution_url }}">Solution</a>
+                                        </div>
+                                    {% endfor %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+{#                    <li></li>#}
+{#                    <li></li>#}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
