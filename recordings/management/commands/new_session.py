@@ -54,8 +54,11 @@ class Command(SyncS3Command):
         # create new CourseSession
         last_session = CourseSession.objects.filter(course__id=settings.CURRENT_COURSE).order_by('-date').last()
 
-        session_num = kwargs.get('num', last_session.num + 1)
-        session_name = input('Enter a name for the session (blank): ')
+        # session_num = kwargs.get('num', last_session.num + 1)
+        session_num = 19
+        # TODO: add optional input for session_num
+
+        session_name = raw_input('Enter a name for the session (blank): ')
 
         try:
             session = CourseSession.objects.get(date=self.session_date, course=self.course)
@@ -67,24 +70,44 @@ class Command(SyncS3Command):
 
         # create ClassRecording entries
         today_str = datetime.datetime.strftime(datetime.datetime.today(), '%Y-%m-%d')
-        session_part = 1
+        # TODO: add option to enter custom date
 
+        # TODO: add check of old session numbers to se if duplicates
+
+        upload_files = []
         for file_path in self._new_recordings:
-            short_name = os.path.basename(file_path).rstrip(settings.RECORDING_FILE_EXTENSION).strip('.')
-            recording_name = input('Short name for session part [{}]: '.format(' - '.join(short_name.split('--'))))
+            short_name = os.path.basename(file_path).rstrip('.{}'.format(settings.RECORDING_FILE_EXTENSION))
+            recording_name = raw_input('Short name for session part [{}]: '.format(' - '.join(short_name.split('--'))))
 
             old_file_name = os.path.basename(file_path)
-            slugged_name = '--'.join([old_file_name, slugify(recording_name)])
-            file_name = '{date}--class-{session_num}--{part_num}--{name}.{ext}'.format(
-                date=today_str, session_num=session.num, part_num=old_file_name, name=slugged_name,
+            slugged_name = slugify(old_file_name).rstrip('.{}'.format(settings.RECORDING_FILE_EXTENSION))
+            if recording_name:
+                slugged_name += '--{}'.format(slugify(recording_name))
+            file_name = '{date}--class--{session_num}--{name}.{ext}'.format(
+                date=today_str, session_num=session_num, name=slugged_name,
                 ext=settings.RECORDING_FILE_EXTENSION)
+            upload_files.append({
+                'file_path': file_path,
+                'file_name': file_name,
+                'short_name': short_name,
+            })
 
-            key = self.handle_session_recording_file(file_path, file_name)
+        self.upload_create_recording_files(upload_files)
+
+    def upload_create_recording_files(self, upload_files):
+        session_part = 1
+        for file_args in upload_files:
+            key = self.handle_session_recording_file(file_args['file_path'], file_args['file_name'])
+
+            if len(short_name.split('--')) > 1:
+                session_part_str = short_name.split('--')[0]
+                if session_part_str.isdigit():
+                    session_part = int(session_part_str)
 
             if len(short_name.split('--')) > 1:
                 short_name = short_name.split('--')[1]
             display_name = ' '.join(short_name.split('-')).title()
-            obj = ClassRecording(session=session, url=key.generate_url(expires_in=0, query_auth=False),
+            obj = ClassRecording(session=file_args['session'], url=key.generate_url(expires_in=0, query_auth=False),
                                  name=display_name, class_part=session_part)
             obj.save()
 
@@ -147,4 +170,4 @@ class Command(SyncS3Command):
 
         self.load_files()
         self.build_session()
-        # self.announce()
+        self.announce()

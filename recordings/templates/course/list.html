@@ -53,14 +53,6 @@
                                             <a href="{{ cw.solution_url }}">Solution</a>
                                         </div>
                                     {% endfor %}
-
-                                    {% for cw in recording.codewarsproblem_set.all %}
-                                        <div class="well codewars">
-                                            <a class="codewars" href="{{ cw.url }}">{% trans 'Codewars' %}: {{ cw.name }}</a>
-                                            <br>
-                                            <a href="{{ cw.solution_url }}">Solution</a>
-                                        </div>
-                                    {% endfor %}
                                 </li>
                             {% endfor %}
                         </ul>

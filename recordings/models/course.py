@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
 
@@ -20,7 +21,7 @@ class Course(CourseResource):
 
 
 class CourseSession(CourseResource):
-    course = models.ForeignKey(Course)
+    course = models.ForeignKey(Course, default=settings.CURRENT_COURSE)
     num = models.PositiveIntegerField(verbose_name='Session Number')
     date = models.DateField(default=datetime.today())
     slides_url = models.URLField(max_length=250, null=True, blank=True)
@@ -40,3 +41,7 @@ class CourseSession(CourseResource):
             self.slug = '{}-{}'.format(self.course.slug, self.num)
         super(CourseSession, self).save(force_insert=False, force_update=False, using=None,
                                         update_fields=None)
+
+    @classmethod
+    def last_session(cls):
+        return cls.objects.filter(course_id=settings.CURRENT_COURSE).last().num

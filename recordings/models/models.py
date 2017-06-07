@@ -56,9 +56,10 @@ class ClassRecording(CourseResource):
 
 class CodeWarsProblem(CourseResource):
     session = models.ForeignKey(CourseSession, null=True, blank=True)
+    recording = models.ForeignKey(ClassRecording, null=True, blank=True)
     url = models.CharField(max_length=250)
     url_solution = models.URLField(max_length=250, null=True, blank=True)
-    recording = models.ForeignKey(ClassRecording, null=True, blank=True)
+    kyu = models.PositiveIntegerField(null=True, blank=True)
 
     tags = TaggableManager()
 
@@ -80,7 +81,6 @@ class SessionReference(CourseResource):
     url = models.URLField(null=True, blank=True)
     gist_url = models.URLField(null=True, blank=True)
     snippet = models.TextField(null=True, blank=True)
-    kyu = models.PositiveIntegerField(null=True, blank=True)
 
     tags = TaggableManager()
 
