@@ -72,7 +72,7 @@ class Command(SyncS3Command):
         today_str = datetime.datetime.strftime(datetime.datetime.today(), '%Y-%m-%d')
         # TODO: add option to enter custom date
 
-        # TODO: add check of old session numbers to se if duplicates
+        # TODO: add check of old session numbers to see if duplicates
 
         upload_files = []
         for file_path in self._new_recordings:
@@ -90,6 +90,7 @@ class Command(SyncS3Command):
                 'file_path': file_path,
                 'file_name': file_name,
                 'short_name': short_name,
+                'session': session,
             })
 
         self.upload_create_recording_files(upload_files)
@@ -98,9 +99,10 @@ class Command(SyncS3Command):
         session_part = 1
         for file_args in upload_files:
             key = self.handle_session_recording_file(file_args['file_path'], file_args['file_name'])
+            short_name = file_args['short_name']
 
             if len(short_name.split('--')) > 1:
-                session_part_str = short_name.split('--')[0]
+                session_part_str = file_args['short_name'].split('--')[0]
                 if session_part_str.isdigit():
                     session_part = int(session_part_str)
 
@@ -158,8 +160,7 @@ class Command(SyncS3Command):
                     text='New class recordings:\n{}'.format(urls_txt),
                     username='davinci_class',
                     icon_emoji=':robot_face:')
-        self.stdout.write(
-            self.style.SUCCESS('Posted \n'.format(urls_txt)))
+        self.stdout.write(self.style.SUCCESS('Posted \n'.format(urls_txt)))
 
     def handle(self, *args, **options):
         if options['debug']:
@@ -168,6 +169,6 @@ class Command(SyncS3Command):
         if not os.path.isdir(settings.RECORDING_HOLD_PATH):
             raise OSError('Directory {} does not exist or not defined.'.format(settings.RECORDING_HOLD_PATH))
 
-        self.load_files()
-        self.build_session()
+        # self.load_files()
+        # self.build_session()
         self.announce()

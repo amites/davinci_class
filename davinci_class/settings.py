@@ -251,6 +251,81 @@ ZINNIA_MARKUP_LANGUAGE = 'markdown'
 
 FORCE_LOWERCASE_TAGS = True
 
+
+###########
+# Logging #
+###########
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format':
+                '%(levelname)s %(asctime)s %(module)s %(process)d '
+                '%(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            # 'filters': ['require_debug_false', ],
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
+        'file_log': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'formatter': 'verbose',
+            'filename': path.abspath(path.join(BASE_DIR, '../project.log')),
+        },
+        #        'rotating_file': {
+        #            'level': 'DEBUG',
+        #            'formatter': 'verbose',
+        #            'filename':   MY_LOG_FILENAME, # full path works
+        #            'class': 'logging.handlers.TimedRotatingFileHandler',
+        #            'when': 'midnight',
+        #            'interval': 7,
+        #            'backupCount': 52,
+        #        },
+    },
+    'loggers': {
+        '': {
+    'handlers': ['file_log', ],
+    'propagate': True,
+    'level': 'INFO',
+},
+        #        'debug': {
+        #            'handlers' :['console', ],
+        #            'propagate': True,
+        #            'level': 'INFO',
+        #        },
+        'datapaq': {
+    'handlers': ['file_log', ],
+    'propagate': True,
+    'level': 'INFO',
+},
+        'django.request': {
+            'handlers': ['mail_admins', ],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'django.db.backend': {
+    'handlers': ['file_log', ],
+    'propagate': True,
+    'level': 'INFO',
+},
+    },
+}
+
+
 ##################
 # LOCAL SETTINGS #
 ##################

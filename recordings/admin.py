@@ -41,8 +41,10 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(CourseSession)
 class CourseSession(admin.ModelAdmin):
-    list_display = ('course', 'num', 'date', )
+    list_display = ('course', 'num', 'has_slides', 'date', )
     save_on_top = True
+
+    list_filter = ['course', ]
 
     inlines = [
         ClassRecordingsInline,

@@ -45,3 +45,7 @@ class CourseSession(CourseResource):
     @classmethod
     def last_session(cls):
         return cls.objects.filter(course_id=settings.CURRENT_COURSE).last().num
+
+    @property
+    def has_slides(self):
+        return bool(self.slides_url)
