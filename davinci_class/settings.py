@@ -196,13 +196,13 @@ INSTALLED_APPS = (
     "django.contrib.sitemaps",
     "django.contrib.staticfiles",
 
-    'recordings',
-    'taggit',
-
     'django_comments',
     'mptt',
     'tagging',
     'zinnia',
+
+    'recordings',
+    'taggit',
 
     # dev
     'django_extensions',
