@@ -54,3 +54,10 @@ class CourseSession(admin.ModelAdmin):
 
 
 admin.site.register(CodeWarsProblem)
+
+
+from recordings.admin_entry import EntryAdmin
+from zinnia.models.entry import Entry
+admin.site.unregister(Entry)
+admin.site.register(Entry, EntryAdmin)
+

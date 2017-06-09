@@ -358,6 +358,3 @@ class EntryAdmin(admin.ModelAdmin):
         'Ping Directories for selected entries')
 
 
-admin.site.unregister(Entry)
-admin.site.register(Entry, EntryAdmin)
-
