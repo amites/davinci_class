@@ -1,13 +1,10 @@
 import datetime
-import math
 import os
 import shutil
 from logging import getLogger
 
-from boto.s3.connection import S3Connection
 from django.conf import settings
 from django.template.defaultfilters import slugify
-from filechunkio import FileChunkIO
 from slackclient import SlackClient
 
 from recordings.models import ClassRecording, Course, CourseSession
@@ -23,7 +20,8 @@ class Command(SyncS3Command):
         self.bucket = None
         self.conn = None
         self.debug = False
-        self._new_recordings = []
+        self.new_recordings = []
+        self.new_urls = []
         self.course = Course.objects.get(pk=settings.CURRENT_COURSE)
 
         self.session_date = datetime.date.today()
@@ -46,7 +44,7 @@ class Command(SyncS3Command):
         # pull files form a holding dir defined in settings
         for file_name in os.listdir(self.recording_hold_path):
             if file_name.endswith(settings.RECORDING_FILE_EXTENSION):
-                self._new_recordings.append(os.path.join(self.recording_hold_path, file_name))
+                self.new_recordings.append(os.path.join(self.recording_hold_path, file_name))
 
         # add parser for course git repo to pickup new files to add to session resources
 
@@ -54,9 +52,21 @@ class Command(SyncS3Command):
         # create new CourseSession
         last_session = CourseSession.objects.filter(course__id=settings.CURRENT_COURSE).order_by('-date').last()
 
-        # session_num = kwargs.get('num', last_session.num + 1)
-        session_num = 19
-        # TODO: add optional input for session_num
+        session_default = last_session.num + 1
+        session_num = None
+
+        while not session_num:
+            input_num = raw_input('Session number? (Leave empty for default {}): '.format(session_default))
+            if not input_num:
+                session_num = session_default
+            elif str(input_num).isdigit():
+                session_num = int(input_num)
+                try:
+                    CourseSession.objects.get(course=self.course, num=session_num)
+                    check_session = raw_input('Session with number {} found, is that correct? (Y/N): ')
+                    if check_session
+            else:
+                print '{} is not a valid number, try again'.format(input_num)
 
         session_name = raw_input('Enter a name for the session (blank): ')
 
@@ -75,7 +85,7 @@ class Command(SyncS3Command):
         # TODO: add check of old session numbers to see if duplicates
 
         upload_files = []
-        for file_path in self._new_recordings:
+        for file_path in self.new_recordings:
             short_name = os.path.basename(file_path).rstrip('.{}'.format(settings.RECORDING_FILE_EXTENSION))
             recording_name = raw_input('Short name for session part [{}]: '.format(' - '.join(short_name.split('--'))))
 
@@ -83,7 +93,7 @@ class Command(SyncS3Command):
             slugged_name = slugify(old_file_name).rstrip('.{}'.format(settings.RECORDING_FILE_EXTENSION))
             if recording_name:
                 slugged_name += '--{}'.format(slugify(recording_name))
-            file_name = '{date}--class--{session_num}--{name}.{ext}'.format(
+            file_name = '{date}--class-{session_num}--{name}.{ext}'.format(
                 date=today_str, session_num=session_num, name=slugged_name,
                 ext=settings.RECORDING_FILE_EXTENSION)
             upload_files.append({
@@ -140,6 +150,9 @@ class Command(SyncS3Command):
         self.upload_file(file_path, s3_file_name)
         bucket = self.get_bucket()
         key = bucket.new_key(s3_file_name)
+        key.make_public()
+
+        self.new_urls.append(key.generate_url(expires_in=0, query_auth=False))
 
         # move old file to new path (hold to store)
         shutil.move(file_path, os.path.join(self.recording_path, file_name))
@@ -148,14 +161,14 @@ class Command(SyncS3Command):
     def announce(self):
         # post notification of new session references to slack
         if not settings.SLACK_API_TOKEN:
-            logger.error('No Slack Token Defined -- Aborting Post to Slack')
+            print('No Slack Token Defined -- Aborting Post to Slack')
             return
-        if not self.new_recordings:
-            logger.info('No new recordings to post to Slack.')
-            return
-        urls = [cr.url for cr in self.new_recordings]
+        # if not self.new_recordings:
+        #     print('No new recordings to post to Slack.')
+        #     return
+
         sc = SlackClient(settings.SLACK_API_TOKEN)
-        urls_txt = '<{}>'.format('>\n<'.join(urls))
+        urls_txt = '<{}>'.format('>\n<'.join(self.new_urls))
         sc.api_call('chat.postMessage', channel=settings.SLACK_CHANNEL,
                     text='New class recordings:\n{}'.format(urls_txt),
                     username='davinci_class',
@@ -169,6 +182,6 @@ class Command(SyncS3Command):
         if not os.path.isdir(settings.RECORDING_HOLD_PATH):
             raise OSError('Directory {} does not exist or not defined.'.format(settings.RECORDING_HOLD_PATH))
 
-        # self.load_files()
-        # self.build_session()
+        self.load_files()
+        self.build_session()
         self.announce()

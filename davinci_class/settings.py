@@ -243,6 +243,7 @@ SLACK_API_TOKEN = None
 ##########
 
 ZINNIA_MARKUP_LANGUAGE = 'markdown'
+ZINNIA_MARKDOWN_EXTENSIONS = ['markdown.extensions.fenced_code', ]
 
 
 #########################
