@@ -1,3 +1,11 @@
+"""
+This command does 2 things
+ - 1 provides an extendable class for interacting with Amazon S3 buckets
+ - 2 synchronizes a local directory with a remote S3 bucket
+    - uploading files that exist remote but not local
+    - adding database entries for any remote files that are not known locally
+    - WARNING: this has not been tested since a recent refactor and is probably broken
+"""
 from logging import getLogger
 import math
 import os

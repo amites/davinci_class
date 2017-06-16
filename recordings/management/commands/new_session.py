@@ -5,6 +5,7 @@ from logging import getLogger
 
 from django.conf import settings
 from django.template.defaultfilters import slugify
+from six.moves import input  # Py2 + Py3 compatible
 from slackclient import SlackClient
 
 from recordings.models import ClassRecording, Course, CourseSession
@@ -25,8 +26,9 @@ class Command(SyncS3Command):
         self.course = Course.objects.get(pk=settings.CURRENT_COURSE)
 
         self.session_date = datetime.date.today()
+        # self.session_date = datetime.date.today()
 
-        self.recording_path  = settings.RECORDING_PATH
+        self.recording_path = settings.RECORDING_PATH
         self.recording_hold_path = settings.RECORDING_HOLD_PATH
         super(Command, self).__init__(*args, **kwargs)
 
@@ -46,9 +48,9 @@ class Command(SyncS3Command):
             if file_name.endswith(settings.RECORDING_FILE_EXTENSION):
                 self.new_recordings.append(os.path.join(self.recording_hold_path, file_name))
 
-        # add parser for course git repo to pickup new files to add to session resources
+        # TODO: add parser for course git repo to pickup new files to add to session resources
 
-    def build_session(self, **kwargs):
+    def build_session(self):
         # create new CourseSession
         last_session = CourseSession.objects.filter(course__id=settings.CURRENT_COURSE).order_by('-date').last()
 
@@ -56,26 +58,30 @@ class Command(SyncS3Command):
         session_num = None
 
         while not session_num:
-            input_num = raw_input('Session number? (Leave empty for default {}): '.format(session_default))
+            input_num = input('Session number? (Leave empty for default {}): '.format(session_default))
             if not input_num:
                 session_num = session_default
             elif str(input_num).isdigit():
                 session_num = int(input_num)
                 try:
                     CourseSession.objects.get(course=self.course, num=session_num)
-                    check_session = raw_input('Session with number {} found, is that correct? (Y/N): ')
-                    if check_session
+                    check_session = input('Session with number {} found, is that correct? [y/n]: ')
+                    if check_session.lower() in ['n', 'no']:
+                        session_num = None
+                except CourseSession.DoesNotExist:
+                    pass
             else:
-                print '{} is not a valid number, try again'.format(input_num)
+                print('{} is not a valid number, try again'.format(input_num))
 
-        session_name = raw_input('Enter a name for the session (blank): ')
+        session_name = input('Enter a name for the session (blank): ')
 
         try:
             session = CourseSession.objects.get(date=self.session_date, course=self.course)
         except CourseSession.DoesNotExist:
             session = CourseSession(date=self.session_date, course=self.course, num=session_num)
 
-        session.name = session_name
+        if session_name:
+            session.name = session_name
         session.save()
 
         # create ClassRecording entries
@@ -87,7 +93,7 @@ class Command(SyncS3Command):
         upload_files = []
         for file_path in self.new_recordings:
             short_name = os.path.basename(file_path).rstrip('.{}'.format(settings.RECORDING_FILE_EXTENSION))
-            recording_name = raw_input('Short name for session part [{}]: '.format(' - '.join(short_name.split('--'))))
+            recording_name = input('Short name for session part [{}]: '.format(' - '.join(short_name.split('--'))))
 
             old_file_name = os.path.basename(file_path)
             slugged_name = slugify(old_file_name).rstrip('.{}'.format(settings.RECORDING_FILE_EXTENSION))
@@ -132,7 +138,9 @@ class Command(SyncS3Command):
         # ask if session is codewars
         # if so get from user
             # url problem
+                # use requests to pull web-page and scrape data
             # url solution (github)
+                # use requests to save the raw code to a db TextField
             # code snippet?
         pass
 
@@ -163,9 +171,9 @@ class Command(SyncS3Command):
         if not settings.SLACK_API_TOKEN:
             print('No Slack Token Defined -- Aborting Post to Slack')
             return
-        # if not self.new_recordings:
-        #     print('No new recordings to post to Slack.')
-        #     return
+        if not self.new_recordings:
+            print('No new recordings to post to Slack.')
+            return
 
         sc = SlackClient(settings.SLACK_API_TOKEN)
         urls_txt = '<{}>'.format('>\n<'.join(self.new_urls))

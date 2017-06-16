@@ -27,10 +27,3 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(url='/blog/',
                                     permanent=False), name='home'),
 ]
-
-
-# urlpatterns = i18n_patterns(
-# if settings.USE_MODELTRANSLATION:
-#     urlpatterns += [
-#         url('^i18n/$', set_language, name='set_language'),
-#     ]

@@ -33,6 +33,7 @@ class ClassRecordingAdmin(admin.ModelAdmin):
         CodeWarsProblemInline,
     ]
 
+
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('name', 'date_start', 'slug')
@@ -54,10 +55,3 @@ class CourseSession(admin.ModelAdmin):
 
 
 admin.site.register(CodeWarsProblem)
-
-
-from recordings.admin_entry import EntryAdmin
-from zinnia.models.entry import Entry
-admin.site.unregister(Entry)
-admin.site.register(Entry, EntryAdmin)
-

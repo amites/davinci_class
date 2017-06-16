@@ -11,6 +11,8 @@ from recordings.models import ClassRecording, CodeWarsProblem, Course, CourseSes
 
 logger = getLogger(__name__)
 
+# The beginning of a command line function to streamline back-filling old
+# Course entries.
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
