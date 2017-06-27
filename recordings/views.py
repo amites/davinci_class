@@ -16,6 +16,15 @@ def course_list(request, course_arg=None):
 
     kwargs['course__{}'.format(field)] = val
 
+    # url match for 'recordings/course/2017-spring'
+
+    # longer way
+    # course = Course.objects.filter(slug='20167-spring')
+    # sessions = CourseSession.objects.filter(course=course)
+
+    # more verbose
+    # CourseSession.objects.filter(course__slug='2017-spring')
+
     sessions = CourseSession.objects.filter(**kwargs).order_by('-date')
     context = {
         'sessions': sessions,
@@ -34,9 +43,14 @@ def recording_list(request, course_arg=None):
 
     try:
         course = Course.objects.get(**kwargs)
+
+        # dynamically search based on kwargs above
+        # course = Course.objects.get(id=int_(course_arg)
+        # course = Course.objects.get(slug=course_arg)
     except Course.DoesNotExist:
         course = None
 
+    # TODO: break this out into simpler logic
     kwargs = dict([('session__course__' + var, val) for var, val in kwargs.items()])
     recordings = ClassRecording.objects.filter(**kwargs).order_by('session__date', 'class_part')
     if recordings:
