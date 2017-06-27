@@ -18,7 +18,7 @@ COURSE_CHOICES = (
 class ClassRecording(CourseResource):
     session = models.ForeignKey(CourseSession, null=True, blank=True)
     url = models.CharField(max_length=250)
-    class_part = models.IntegerField()
+    class_part = models.PositiveIntegerField()
 
     tags = TaggableManager()
 
@@ -79,6 +79,7 @@ class SessionReference(CourseResource):
     session = models.ForeignKey(CourseSession)
     recording = models.ForeignKey(ClassRecording, null=True, blank=True)
     url = models.URLField(null=True, blank=True)
+    # TODO: remove gist_url nd merge into url
     gist_url = models.URLField(null=True, blank=True)
     snippet = models.TextField(null=True, blank=True)
 
