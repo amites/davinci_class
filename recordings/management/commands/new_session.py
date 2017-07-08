@@ -8,7 +8,7 @@ from django.template.defaultfilters import slugify
 from six.moves import input  # Py2 + Py3 compatible
 from slackclient import SlackClient
 
-from recordings.models import ClassRecording, Course, CourseSession
+from recordings.models import ClassRecording, Course, CourseSession, SessionReference
 from recordings.management.commands.sync_recordings_s3 import SyncS3Command
 
 
@@ -24,9 +24,10 @@ class Command(SyncS3Command):
         self.new_recordings = []
         self.new_urls = []
         self.course = Course.objects.get(pk=settings.CURRENT_COURSE)
-
-        self.session_date = datetime.date.today()
-        # self.session_date = datetime.date.today()
+        self._session = None
+        self._session_date = None
+        self._session_num = None
+        self._session_name = None
 
         self.recording_path = settings.RECORDING_PATH
         self.recording_hold_path = settings.RECORDING_HOLD_PATH
@@ -50,45 +51,73 @@ class Command(SyncS3Command):
 
         # TODO: add parser for course git repo to pickup new files to add to session resources
 
-    def build_session(self):
-        # create new CourseSession
+    @property
+    def session_date(self):
+        if self._session_date:
+            return self._session_date
+        date_str = '%Y-%m-%d'
+        today = datetime.date.today()
+        session_date = None
+        while not session_date:
+            user_date_str = input('Enter class date ({}): '.format(today.strftime(date_str)))
+            if user_date_str:
+                try:
+                    session_date = datetime.datetime.strptime(user_date_str, date_str)
+                except ValueError:
+                    continue
+            session_date = today
+        self._session_date = session_date
+        return self._session_date
+
+    @property
+    def session_num(self):
+        if self._session_num:
+            return self._session_num
+
         last_session = CourseSession.objects.filter(course__id=settings.CURRENT_COURSE).order_by('-date').last()
 
         session_default = last_session.num + 1
-        session_num = None
 
-        while not session_num:
+        # keep asking until valid answer
+        while not self._session_num:
             input_num = input('Session number? (Leave empty for default {}): '.format(session_default))
             if not input_num:
-                session_num = session_default
+                self._session_num = session_default
             elif str(input_num).isdigit():
-                session_num = int(input_num)
+                self._session_num = int(input_num)
                 try:
-                    CourseSession.objects.get(course=self.course, num=session_num)
+                    CourseSession.objects.get(course=self.course, num=self._session_num)
                     check_session = input('Session with number {} found, is that correct? [y/n]: ')
                     if check_session.lower() in ['n', 'no']:
-                        session_num = None
+                        self._session_num = None
                 except CourseSession.DoesNotExist:
                     pass
             else:
                 print('{} is not a valid number, try again'.format(input_num))
+        return self._session_num
 
-        session_name = input('Enter a name for the session (blank): ')
+    @property
+    def session(self):
+        # create new CourseSession
+        if not self._session_name:
+            self._session_name = input('Enter a name for the session (blank): ')
 
         try:
-            session = CourseSession.objects.get(date=self.session_date, course=self.course)
+            self._session = CourseSession.objects.get(date=self.session_date, course=self.course)
         except CourseSession.DoesNotExist:
-            session = CourseSession(date=self.session_date, course=self.course, num=session_num)
+            self._session = CourseSession(date=self.session_date, course=self.course, num=self.session_num)
 
-        if session_name:
-            session.name = session_name
-        session.save()
+        if self._session_name:
+            self._session.name = self._session_name
+        self._session.save()
+        return self._session
 
+    def add_recordings(self):
         # create ClassRecording entries
-        today_str = datetime.datetime.strftime(datetime.datetime.today(), '%Y-%m-%d')
-        # TODO: add option to enter custom date
-
         # TODO: add check of old session numbers to see if duplicates
+
+        # TODO: add input to check if single recordings have code wars
+        # TODO: add input to check if single recordings have additional resources
 
         upload_files = []
         for file_path in self.new_recordings:
@@ -100,13 +129,13 @@ class Command(SyncS3Command):
             if recording_name:
                 slugged_name += '--{}'.format(slugify(recording_name))
             file_name = '{date}--class-{session_num}--{name}.{ext}'.format(
-                date=today_str, session_num=session_num, name=slugged_name,
+                date=self.session_date, session_num=self.session_num, name=slugged_name,
                 ext=settings.RECORDING_FILE_EXTENSION)
             upload_files.append({
                 'file_path': file_path,
                 'file_name': file_name,
                 'short_name': short_name,
-                'session': session,
+                'session': self.session,
             })
 
         self.upload_create_recording_files(upload_files)
@@ -129,12 +158,9 @@ class Command(SyncS3Command):
                                  name=display_name, class_part=session_part)
             obj.save()
 
-            self.get_session_codewars(obj)
-            self.get_session_resource(obj)
-
             session_part += 1
 
-    def get_session_codewars(self, recording):
+    def add_session_codewars(self, recording):
         # ask if session is codewars
         # if so get from user
             # url problem
@@ -144,13 +170,40 @@ class Command(SyncS3Command):
             # code snippet?
         pass
 
-    def get_session_resource(self, recording):
+    def add_session_resource(self):
         # ask if additional resource
         # if so get from user
             # url
             # gist url
             # parse file for snippet?
-        pass
+        added = False
+        while True:
+            has_resource = input('Is there {} resource for this session? [y/n]: '.format('a' if added else 'another'))
+            if has_resource.lower() not in ['y', 'yes']:
+                break
+            resource_url = input('Enter resource url if there is one: ')
+            resource_gist = input('Enter gist_url if there is one: ')
+
+            # TODO: validate that url is valid in form
+            # TODO: validate that url exists, include setting to disable check
+
+            # TODO: load contents of snippet file
+            # resource_snippet_file = input('Enter snippet file path if there is one: ')
+
+            # TODO: add logic to connect to specific recording
+
+            if not resource_url and not resource_gist:
+                continue
+
+            name = input('Enter resource name (optional): ')
+            kwargs = {
+                'name': name if name else None,
+                'session': self.session,
+                'url': resource_url if resource_url else None,
+                'gist_url': resource_gist if resource_gist else None,
+            }
+
+            SessionReference.objects.create(**kwargs)
 
     def handle_session_recording_file(self, file_path, file_name):
         # upload file to bucket
@@ -191,5 +244,11 @@ class Command(SyncS3Command):
             raise OSError('Directory {} does not exist or not defined.'.format(settings.RECORDING_HOLD_PATH))
 
         self.load_files()
-        self.build_session()
+
+        # pre-load class session data
+        self.session
+        self.session_date
+
+        self.add_recordings()
+        self.add_session_resource()
         self.announce()

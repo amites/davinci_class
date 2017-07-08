@@ -1,18 +1,17 @@
-import datetime
 import re
 from logging import getLogger
 
 import requests
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from recordings.models import ClassRecording, CodeWarsProblem, Course, CourseSession
+from recordings.models import CodeWarsProblem
 
 
 logger = getLogger(__name__)
 
 # The beginning of a command line function to streamline back-filling old
 # Course entries.
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
