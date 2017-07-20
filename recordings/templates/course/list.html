@@ -52,6 +52,11 @@
                                             <a href="{{ cw.solution_url }}">Solution</a>
                                         </div>
                                     {% endfor %}
+                                    {% for ref in recording.sessionreference_set.all %}
+                                        <div class="well reference">
+                                            <a class="reference" href="{{ ref.url }}">{{ ref.name }}</a>
+                                        </div>
+                                    {% endfor %}
                                 </li>
                             {% endfor %}
                         </ul>
