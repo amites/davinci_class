@@ -5,16 +5,15 @@ import os
 import re
 import sys
 from contextlib import contextmanager
+from datetime import date
 from functools import wraps
 from getpass import getpass, getuser
 from glob import glob
 from importlib import import_module
 from posixpath import join
 
-from mezzanine.utils.conf import real_project_name
-
 from fabric.api import abort, env, cd, prefix, sudo as _sudo, run as _run, \
-    hide, task, local
+    hide, task, local, put
 from fabric.context_managers import settings as fab_settings
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists, upload_template
@@ -27,26 +26,25 @@ from fabric.decorators import hosts
 # Config setup #
 ################
 
-env.proj_app = real_project_name("davinci_class")
-
 conf = {
     'PROJECT_NAME': 'davinci_class',
     'SSH_USER': 'ubuntu',
     'HOSTS': ['aws-dj-class', ],
 }
+
 env.db_pass = conf.get("DB_PASS", None)
 env.admin_pass = conf.get("ADMIN_PASS", None)
-env.user = conf.get("c", getuser())
+env.user = conf.get("SSH_USER", getuser())
 env.password = conf.get("SSH_PASS", None)
 env.key_filename = conf.get("SSH_KEY_PATH", None)
 env.hosts = conf.get("HOSTS", [""])
 
-env.proj_name = conf.get("PROJECT_NAME", env.proj_app)
+env.proj_name = conf.get("PROJECT_NAME", conf.get('davinci_class'))
 env.venv_home = conf.get("VIRTUALENV_HOME",
                          "/mnt/{0}/virtualenv".format(env.proj_name))
 env.venv_path = join(env.venv_home, env.proj_name)
-env.proj_path = "/mnt/{0}/virtualenv/{0}".format(env.proj_name)
-env.manage = "%s/bin/python %s/manage.py" % (env.venv_path, env.proj_path)
+env.project_path = "/mnt/{0}/virtualenv/{0}".format(env.proj_name)
+env.manage = "%s/bin/python %s/manage.py" % (env.venv_path, env.project_path)
 env.domains = conf.get("DOMAINS", [conf.get("LIVE_HOSTNAME", env.hosts[0])])
 env.domains_nginx = " ".join(env.domains)
 env.domains_regex = "|".join(env.domains)
@@ -66,7 +64,11 @@ env.nevercache_key = conf.get("NEVERCACHE_KEY", "")
 if env.deploy_tool == "git":
     env.repo_path = "/home/%s/git/%s.git" % (env.user, env.proj_name)
 else:
-    env.repo_path = env.proj_path
+    env.repo_path = env.project_path
+
+
+DATE_STAMP = date.today().strftime('%Y-%m-%d')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 ##################
@@ -100,7 +102,7 @@ templates = {
     },
     "settings": {
         "local_path": "deploy/local_settings.py.template",
-        "remote_path": "%(proj_path)s/%(proj_app)s/local_settings.py",
+        "remote_path": "%(proj_path)s/%(proj_name)s/local_settings.py",
     },
 }
 
@@ -125,7 +127,7 @@ def project():
     Runs commands within the project's directory.
     """
     with virtualenv():
-        with cd(env.proj_path):
+        with cd(env.project_path):
             yield
 
 
@@ -135,7 +137,7 @@ def update_changed_requirements():
     Checks for changes in the requirements file across an update,
     and gets new requirements if changes have occurred.
     """
-    reqs_path = join(env.proj_path, env.reqs_path)
+    reqs_path = join(env.project_path, env.reqs_path)
     get_reqs = lambda: run("cat %s" % reqs_path, show=False)
     old_reqs = get_reqs() if env.reqs_path else ""
     yield
@@ -155,7 +157,7 @@ def update_changed_requirements():
             else:
                 # All requirements are pinned.
                 return
-        pip("-r %s/%s" % (env.proj_path, env.reqs_path))
+        pip("-r %s/%s" % (env.project_path, env.reqs_path))
 
 
 ###########################################
@@ -259,7 +261,7 @@ def rsync_upload():
     excludes = ["*.pyc", "*.pyo", "*.db", ".DS_Store", ".coverage",
                 "local_settings.py", "/static", "/.git", "/.hg"]
     local_dir = os.getcwd() + os.sep
-    return rsync_project(remote_dir=env.proj_path, local_dir=local_dir,
+    return rsync_project(remote_dir=env.project_path, local_dir=local_dir,
                          exclude=excludes)
 
 
@@ -276,8 +278,8 @@ def vcs_upload():
                 run("git init --bare")
         local("git push -f %s master" % remote_path)
         with cd(env.repo_path):
-            run("GIT_WORK_TREE=%s git checkout -f master" % env.proj_path)
-            run("GIT_WORK_TREE=%s git reset --hard" % env.proj_path)
+            run("GIT_WORK_TREE=%s git checkout -f master" % env.project_path)
+            run("GIT_WORK_TREE=%s git reset --hard" % env.project_path)
     elif env.deploy_tool == "hg":
         remote_path = "ssh://%s@%s/%s" % (env.user, env.host_string,
                                           env.repo_path)
@@ -368,7 +370,7 @@ def python(code, show=True):
     setup = "import os;" \
             "os.environ[\'DJANGO_SETTINGS_MODULE\']=\'%s.settings\';" \
             "import django;" \
-            "django.setup();" % env.proj_app
+            "django.setup();" % env.proj_name
     full_code = 'python -c "%s%s"' % (setup, code.replace("`", "\\\`"))
     with project():
         if show:
@@ -463,7 +465,7 @@ def create():
             run("exit")
 
     # Create project path
-    run("mkdir -p %s" % env.proj_path)
+    run("mkdir -p %s" % env.project_path)
 
     # Set up virtual env
     run("mkdir -p %s" % env.venv_home)
@@ -517,7 +519,7 @@ def create():
     upload_template_and_reload("settings")
     with project():
         if env.reqs_path:
-            pip("-r %s/%s" % (env.proj_path, env.reqs_path))
+            pip("-r %s/%s" % (env.project_path, env.reqs_path))
         pip("gunicorn setproctitle psycopg2 "
             "django-compressor python-memcached")
     # Bootstrap the DB
@@ -552,8 +554,8 @@ def remove():
     """
     if exists(env.venv_path):
         run("rm -rf %s" % env.venv_path)
-    if exists(env.proj_path):
-        run("rm -rf %s" % env.proj_path)
+    if exists(env.project_path):
+        run("rm -rf %s" % env.project_path)
     for template in get_templates().values():
         remote_path = template["remote_path"]
         if exists(remote_path):
@@ -576,7 +578,7 @@ def restart():
     Restart gunicorn worker processes for the project.
     If the processes are not running, they will be started.
     """
-    pid_path = "%s/gunicorn.pid" % env.proj_path
+    pid_path = "%s/gunicorn.pid" % env.project_path
     if exists(pid_path):
         run("kill -HUP `cat %s`" % pid_path)
     else:
@@ -593,7 +595,7 @@ def deploy():
     the database, collect any new static assets, and restart gunicorn's worker
     processes for the project.
     """
-    if not exists(env.proj_path):
+    if not exists(env.project_path):
         if confirm("Project does not exist in host server: %s"
                    "\nWould you like to create it?" % env.proj_name):
             create()
@@ -601,12 +603,12 @@ def deploy():
             abort()
 
     # Backup current version of the project
-    with cd(env.proj_path):
+    with cd(env.project_path):
         backup("last.db")
     if env.deploy_tool in env.vcs_tools:
         with cd(env.repo_path):
             if env.deploy_tool == "git":
-                    run("git rev-parse HEAD > %s/last.commit" % env.proj_path)
+                    run("git rev-parse HEAD > %s/last.commit" % env.project_path)
             elif env.deploy_tool == "hg":
                     run("hg id -i > last.commit")
         with project():
@@ -615,7 +617,7 @@ def deploy():
                 run("tar -cf static.tar --exclude='*.thumbnails' %s" %
                     static_dir)
     else:
-        with cd(join(env.proj_path, "..")):
+        with cd(join(env.project_path, "..")):
             excludes = ["*.pyc", "*.pio", "*.thumbnails"]
             exclude_arg = " ".join("--exclude='%s'" % e for e in excludes)
             run("tar -cf {0}.tar {1} {0}".format(env.proj_name, exclude_arg))
@@ -650,17 +652,17 @@ def rollback():
             with cd(env.repo_path):
                 if env.deploy_tool == "git":
                         run("GIT_WORK_TREE={0} git checkout -f "
-                            "`cat {0}/last.commit`".format(env.proj_path))
+                            "`cat {0}/last.commit`".format(env.project_path))
                 elif env.deploy_tool == "hg":
                         run("hg update -C `cat last.commit`")
             with project():
                 with cd(join(static(), "..")):
-                    run("tar -xf %s/static.tar" % env.proj_path)
+                    run("tar -xf %s/static.tar" % env.project_path)
         else:
-            with cd(env.proj_path.rsplit("/", 1)[0]):
+            with cd(env.project_path.rsplit("/", 1)[0]):
                 run("rm -rf %s" % env.proj_name)
                 run("tar -xf %s.tar" % env.proj_name)
-    with cd(env.proj_path):
+    with cd(env.project_path):
         restore("last.db")
     restart()
 
@@ -689,3 +691,16 @@ def pushpull():
 
 def sync_recordngs():
     run('{} sync_recordings_s3 --slack'.format(env.manage))
+
+
+def push_sqlite():
+    db_file_name = 'dev.db'
+    db_file_name_base, db_file_name_ext = os.path.splitext(db_file_name)
+    db_file_name_ext = db_file_name_ext.strip('.')
+
+    with cd(env.project_path):
+        run('mv {} {}--{}.{}'.format(db_file_name_base, DATE_STAMP, db_file_name_ext))
+    remote_db_path = os.path.join(env.project_path, db_file_name)
+    put(os.path.join(BASE_DIR, db_file_name), remote_db_path)
+    with cd(env.project_path):
+        sudo('chown {0}:{0} {1}'.format(env.user, env.user, remote_db_path))
